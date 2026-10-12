@@ -1,0 +1,121 @@
+# Creative direction — how to make a 15-second brand film that does not look made by a machine
+
+Read this before writing any HTML. The engineering is the easy half; this is the
+half that decides whether the film is deliverable.
+
+## Start from one sentence, not from the visuals
+
+A brand film fails when it starts as "a nice-looking animation". It works when
+the whole film is a physical metaphor for one sentence the product actually
+claims, and every act is a literal depiction of part of that sentence.
+
+Two real examples, both delivered and both accepted:
+
+| Film | The sentence | The move | The film |
+| --- | --- | --- | --- |
+| A · memory-first AI assistant (dark) | "What stays with you, shapes what comes next." | The logo is a blob with an off-centre hole. Treat that hole as a camera lens: dive into it at the start, collapse the whole world back into it at the end. | 5 acts: FORGET (text falls apart) → REMEMBER (floating memory cards in the lens) → ACT (verbs firing) → IMPRINT (official imagery through an iris) → LOCKUP (everything falls back into the hole) |
+| B · office-automation agent (light) | The product's key line ends on a decision verb ("…and you make the call"). | Take that last verb literally. Make it an actual stamp that slams on the final downbeat. | 5 acts: one sentence typed → six pipeline steps → laptop shut, work keeps running in the cloud → deliverables arrive → the stamp |
+
+The test: can you say the film's idea in one sentence that contains a *physical
+verb*? "Dive into the logo." "Slam a stamp." If it's "show the product's
+features", you don't have a film yet.
+
+Look for the metaphor in the brand's own assets first. Film A's idea only exists
+because the logo has a hole in it. Real assets are better raw material than
+invented ones because they carry the brand for free.
+
+## The five-act skeleton, and its timing
+
+15 seconds is the default commercial length. The reliable split:
+
+| Act | Time | Job |
+| --- | --- | --- |
+| 1 Hook | 0–3.0s | The sentence arrives. Establish the world; move slowly, one idea. |
+| 2 Development | 3.0–6.0s | Something repeats, one step per beat. Rhythm enters. |
+| 3 Turn | 6.0–9.5s | The longest act. Change of state (night falls, the laptop closes, the work keeps going). This is where drums drop out. |
+| 4 Payoff | 9.5–12.5s | The result arrives. Fastest cutting, most objects, brightest music. |
+| 5 Landing | 12.5–15s | One line, one gesture (the stamp, the collapse), then lockup + CTA. |
+
+Every cut should land on a grid. Pick one beat length for the whole film and put
+every act boundary and every element entrance on multiples of it. This is what
+makes the music and the picture feel like one object rather than two layers.
+
+## Motion rules
+
+**One pull-back per film.** A camera that pulls away reads as "this is ending".
+If you pull back three times, the film has three endings and feels shapeless.
+Push in, push in, push in, pull once at the reveal, then settle.
+
+**Moves live on a camera layer, never on the element.** Give each act its own
+`<div class="cam">` inside the scene and animate *that*. Scaling the content
+directly makes the whole thing read as a sticker being resized. The camera layer
+is also what lets you do a real zoom-through: scale `#cam3` to 3.2 and translate
+it at the same time, so act 4 looks like you flew through the laptop screen.
+
+**Keep the accent colour as a highlight, not a ground.** A saturated accent
+works as the one thing that glows. Filling the frame with it looks like a
+promotional template. Two palettes that worked:
+
+- dark: base `#10142A` (deep indigo), foreground `#F3EDE2` (warm paper), accent
+  `#F5B860` (amber). On a dark base the accent glows.
+- light: base `#F4F2ED` (warm paper), ink `#15171C`, accent `#2B5CFF` (blue).
+  On a light base the accent has to be used sparingly or it turns muddy.
+
+**Compose asymmetrically.** Centring every element produces the "presentation
+slide" look. Put the headline at x=120 and the object at x=640. Let things run
+off the edge.
+
+**Add texture.** A paper-grain SVG turbulence layer at 11–16% and a radial
+falloff are what separate "rendered" from "designed". A barely-moving grain
+(`x: 26, ease: "steps(45)"` over the full film) costs nothing and removes the
+sterile flatness of a pure vector frame.
+
+**Vary entrance mechanics.** If every element fades up and slides 40px, the film
+is one long animation. Mix: a line that types character by character, a card that
+flies in on rotationY, a number that counts, a line that draws itself with
+`stroke-dashoffset`, a stamp that scales down hard from 2.4×, a shape that pulses
+`yoyo/repeat`.
+
+## Things that read as "made by AI" and must be avoided
+
+These come from real client rejections of this exact kind of work:
+
+- Beige and orange-pink palettes with everything neatly arranged on a cream
+  background. Reads as a sweet lifestyle template, not a brand film.
+- Symmetry, and objects parked in the dead centre.
+- Every act being the same length doing the same thing.
+- Continuous smooth easing everywhere. Real motion has hard attacks — a stamp
+  hits with `power4.in` over 0.25s, not `power2.inOut` over 0.6s.
+- A film with no music, or with music that ignores the cuts.
+- Text that is never the point. If an act has no words, that is fine; if every
+  act has three lines of words, it's a slideshow.
+
+## The review loop that catches the rest
+
+You cannot judge a film by reading its code. Render it, then look at it:
+
+1. Render at 30 fps.
+2. Cut a contact sheet: `ffmpeg -i film.mp4 -vf "fps=2,scale=384:-1,tile=6x5" -frames:v 1 sheet.jpg`
+3. Look at the sheet with an image-capable model. Ask for: overall coherence,
+   any broken frame (blank, garbled text, overlapping elements, ghosting), a
+   score out of 10, and **the single most worthwhile fix, with the frame number**.
+4. Fix that one thing. Re-render. Repeat at most twice — after that you are
+   polishing noise.
+
+Ask for one fix, not a list. A model asked for a list will invent ten, most of
+them wrong; asked for the worst one it is usually right about the worst one.
+
+For an individual suspect frame, extract it directly and ask a focused question
+(`-ss 11.0 -frames:v 1 f11.png`). Ghosting and text overlap only show at speed,
+so also sample the tile sheet at 2 fps rather than 1 — a 0.2s artifact
+disappears entirely at 1 fps.
+
+## Chinese text
+
+System CJK fonts are not reliable inside the headless render browser; PingFang SC
+fails to load and the render silently falls back to a different typeface with
+different metrics, which shifts every line in your layout. Embed subsetted
+webfonts instead: Noto Serif SC for headlines, Noto Sans SC for body, downloaded
+from Google Fonts' CSS API with a `text=` parameter limited to the characters the
+film actually uses. The build step should collect the character set from the
+template so the subset stays in sync when the copy changes.
