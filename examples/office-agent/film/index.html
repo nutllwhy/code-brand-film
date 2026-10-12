@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      @font-face { font-family: "Brand Serif"; font-weight: 900; src: url("assets/fonts/serif-900.woff2") format("woff2"); }
+      @font-face { font-family: "Brand Serif"; font-weight: 600; src: url("assets/fonts/serif-600.woff2") format("woff2"); }
+      @font-face { font-family: "Brand Sans"; font-weight: 400; src: url("assets/fonts/sans-400.woff2") format("woff2"); }
+      @font-face { font-family: "Brand Sans"; font-weight: 700; src: url("assets/fonts/sans-700.woff2") format("woff2"); }
+
+      /* ==========================================================
+         Example: office-automation agent — "one sentence, then you decide"
+         light cinematic: warm paper, ink, one confident blue.
+         paper #F4F2ED · ink #15171C · mute #5F6370 · blue #2B5CFF · sky #DCE6FF
+         ========================================================== */
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1920px; height: 1080px; overflow: hidden; background: #F4F2ED; }
+      body { font-family: "Brand Sans", sans-serif; color: #15171C; }
+      #root { position: absolute; inset: 0; overflow: hidden; background: #F4F2ED; }
+      .scene { position: absolute; inset: 0; overflow: hidden; }
+      .cam { position: absolute; inset: 0; transform-origin: 50% 50%; }
+      .abs { position: absolute; }
+      .serif { font-family: "Brand Serif", serif; font-weight: 900; }
+      .mono { font-family: "IBM Plex Mono", "Brand Sans", monospace; letter-spacing: 0.16em; text-transform: uppercase; }
+
+      #s2, #s3, #s4, #s5, #s3-head, #s4-head, #s5-l1, #s5-l2, #seal, #lock, #cta { opacity: 0; }
+
+      /* paper texture + light falloff (radial only; no full-frame linear gradients) */
+      #grain { position: absolute; inset: -40px; z-index: 40; pointer-events: none; opacity: 0.16; mix-blend-mode: multiply;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.45 0 0 0 0 0.42 0 0 0 0 0.38 0 0 0 0.5 0'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)'/%3E%3C/svg%3E"); }
+      #falloff { position: absolute; inset: 0; z-index: 39; pointer-events: none;
+        background: radial-gradient(120% 100% at 50% 45%, rgba(244,242,237,0) 60%, rgba(196,190,178,0.35) 100%); }
+      #night { position: absolute; inset: 0; z-index: 38; pointer-events: none; opacity: 0;
+        background: radial-gradient(110% 90% at 70% 30%, rgba(43,92,255,0.10), rgba(21,23,40,0.16)); }
+
+      /* chrome */
+      .corner { position: absolute; z-index: 45; font-size: 17px; color: #5F6370; }
+      #tl { left: 72px; top: 52px; } #tr { right: 72px; top: 52px; text-align: right; }
+      #bl { left: 72px; bottom: 48px; } #br { right: 72px; bottom: 48px; }
+      #tr b { color: #2B5CFF; font-weight: 400; }
+      #rail { position: absolute; left: 72px; right: 72px; bottom: 92px; height: 2px; background: rgba(21,23,28,0.12); z-index: 45; }
+      #railFill { position: absolute; left: 0; top: 0; height: 2px; width: 100%; background: #2B5CFF; transform-origin: 0 50%; }
+
+      /* ---------- the order (persistent input bar) ---------- */
+      #bar { position: absolute; z-index: 20; left: 260px; top: 470px; width: 1400px; height: 140px; border-radius: 70px;
+        background: #FFFFFF; border: 2px solid rgba(21,23,28,0.10);
+        box-shadow: 0 30px 80px rgba(43,60,120,0.12), 0 4px 14px rgba(21,23,28,0.06); transform-origin: 0 50%; }
+      #barIcon { position: absolute; left: 30px; top: 30px; width: 80px; height: 80px; border-radius: 50%; overflow: hidden; }
+      #barIcon img { width: 80px; height: 80px; display: block; }
+      #barText { position: absolute; left: 136px; top: 44px; font-size: 38px; line-height: 52px; white-space: nowrap; color: #15171C; }
+      #barText .ch { opacity: 0; }
+      #caret { display: inline-block; width: 4px; height: 46px; background: #2B5CFF; vertical-align: -8px; margin-left: 4px; }
+      #send { position: absolute; right: 26px; top: 26px; width: 88px; height: 88px; border-radius: 50%; background: #2B5CFF; }
+      #send i { position: absolute; left: 30px; top: 22px; width: 28px; height: 28px; border-left: 6px solid #FFF; border-top: 6px solid #FFF; transform: translate(4px, 12px) rotate(45deg); }
+      #s1-kicker { left: 268px; top: 360px; font-size: 20px; color: #2B5CFF; }
+      #s1-dots { position: absolute; left: -80px; top: -80px; width: 2080px; height: 1240px; background-image: radial-gradient(circle, rgba(21,23,28,0.16) 2px, transparent 2.5px); background-size: 48px 48px; }
+      #s1-glow { position: absolute; left: 460px; top: 140px; width: 1000px; height: 800px; border-radius: 50%; background: radial-gradient(closest-side, rgba(43,92,255,0.20), rgba(43,92,255,0)); }
+      #s1-ghost { left: 120px; top: 640px; font-size: 300px; line-height: 1; color: #15171C; opacity: 0.045; white-space: nowrap; }
+      #pulse { position: absolute; z-index: 19; left: 1546px; top: 470px; width: 140px; height: 140px; margin: 0; border-radius: 50%; border: 3px solid #2B5CFF; opacity: 0; }
+
+      /* ---------- S2 · 拆解 ---------- */
+      #s2-head { left: 120px; top: 300px; font-size: 96px; line-height: 1.1; white-space: nowrap; }
+      #s2-head em { font-style: normal; color: #2B5CFF; }
+      #track { position: absolute; left: 0; top: 560px; width: 3400px; height: 300px; }
+      #trackLine { position: absolute; left: 180px; top: 58px; width: 2900px; height: 3px; background: rgba(21,23,28,0.14); }
+      #trackFill { position: absolute; left: 180px; top: 58px; width: 2900px; height: 3px; background: #2B5CFF; transform-origin: 0 50%; }
+      .node { position: absolute; top: 0; width: 520px; }
+      .dot { position: absolute; left: 0; top: 0; width: 118px; height: 118px; border-radius: 50%; background: #FFFFFF; border: 3px solid rgba(21,23,28,0.16);
+        font-family: "IBM Plex Mono", monospace; font-size: 34px; line-height: 112px; text-align: center; color: #15171C; }
+      .dot .fill { position: absolute; inset: -3px; border-radius: 50%; background: #2B5CFF; transform: scale(0); }
+      .dot span { position: relative; }
+      .node .lab { position: absolute; left: 0; top: 150px; font-size: 44px; font-weight: 700; white-space: nowrap; }
+      .node .st { position: absolute; left: 0; top: 214px; font-size: 18px; color: #5F6370; }
+      .node .st b { color: #2B5CFF; font-weight: 400; }
+
+      /* ---------- S3 · 多端同步 ---------- */
+      #s3-head { left: 120px; top: 150px; font-size: 92px; line-height: 1.12; white-space: nowrap; }
+      #s3-head em { font-style: normal; color: #2B5CFF; }
+      #s3-sub { left: 124px; top: 270px; font-size: 26px; color: #5F6370; white-space: nowrap; }
+      #s3-sub b { color: #15171C; font-weight: 700; }
+      .dev { position: absolute; }
+      .screen { position: absolute; background: #FFFFFF; border: 3px solid #15171C; overflow: hidden; }
+      .task { position: absolute; left: 28px; right: 28px; }
+      .task .t { font-size: 26px; font-weight: 700; white-space: nowrap; }
+      .task .p { margin-top: 18px; height: 10px; border-radius: 5px; background: #DCE6FF; overflow: hidden; position: relative; }
+      .task .p i { position: absolute; left: 0; top: 0; bottom: 0; width: 100%; background: #2B5CFF; transform-origin: 0 50%; transform: scaleX(0.12); }
+      .task .n { margin-top: 14px; font-family: "IBM Plex Mono", "Brand Sans", monospace; font-size: 20px; color: #5F6370; }
+      #laptop { left: 160px; top: 400px; width: 760px; height: 560px; perspective: 1500px; perspective-origin: 50% -30%; }
+      #lapRig { position: absolute; inset: 0; transform-style: preserve-3d; transform: rotateX(16deg); }
+      #deck { position: absolute; left: 40px; top: 430px; width: 680px; height: 400px; transform-origin: 50% 0; transform: rotateX(90deg); background: #E2DFD8; border: 3px solid #15171C; border-radius: 0 0 26px 26px; }
+      #deck .kb { position: absolute; left: 60px; right: 60px; top: 40px; height: 190px; border-radius: 10px; background: repeating-linear-gradient(90deg, rgba(21,23,28,0.18) 0 34px, transparent 34px 42px); }
+      #deck .tp { position: absolute; left: 250px; width: 180px; top: 260px; height: 110px; border-radius: 10px; border: 3px solid rgba(21,23,28,0.2); }
+      #lid { position: absolute; left: 40px; top: 0; width: 680px; height: 430px; transform-origin: 50% 100%; transform-style: preserve-3d; }
+      #lid .screen { inset: 0; border-radius: 22px 22px 6px 6px; border-width: 14px; border-color: #15171C; }
+      #lidBack { position: absolute; inset: 0; border-radius: 22px 22px 6px 6px; background: #CFCBC2; border: 3px solid #15171C; backface-visibility: hidden; transform: rotateX(180deg); }
+      #lidBack img { position: absolute; left: 290px; top: 165px; width: 100px; height: 100px; border-radius: 50%; transform: scaleY(-1); opacity: 0.9; }
+      #lid .screen { backface-visibility: hidden; }
+      #base { display: none; }
+      #lapTask { top: 120px; }
+      #lapLabel { left: 40px; top: 520px; font-size: 18px; color: #5F6370; }
+      #cloud { left: 1010px; top: 470px; width: 260px; height: 170px; }
+      #cloud svg { width: 260px; height: 170px; overflow: visible; }
+      #cloudLabel { left: 1010px; top: 660px; width: 260px; text-align: center; font-size: 18px; color: #2B5CFF; }
+      #phone { left: 1360px; top: 380px; width: 250px; height: 500px; }
+      #phone .screen { inset: 0; border-radius: 44px; border-width: 10px; }
+      #phTask { top: 150px; left: 22px; right: 22px; }
+      #phTask .t { font-size: 22px; }
+      #phLabel { left: 0; top: 520px; width: 250px; text-align: center; font-size: 18px; color: #5F6370; }
+      #web { left: 1300px; top: 380px; width: 520px; height: 360px; }
+      #web .screen { inset: 0; border-radius: 14px; }
+      #web .chrome { position: absolute; left: 0; right: 0; top: 0; height: 46px; border-bottom: 2px solid rgba(21,23,28,0.12); background: #F4F2ED; }
+      #web .chrome b { position: absolute; top: 15px; width: 14px; height: 14px; border-radius: 50%; background: rgba(21,23,28,0.25); }
+      #webTask { top: 120px; }
+      #webLabel { left: 0; top: 380px; width: 520px; text-align: center; font-size: 18px; color: #5F6370; }
+      #threadSvg { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; }
+      #threadSvg path { fill: none; stroke: #2B5CFF; stroke-width: 3; stroke-linecap: round; }
+      #clock { right: 120px; top: 156px; font-family: "IBM Plex Mono", monospace; font-size: 72px; line-height: 1; color: #15171C; text-align: right; }
+      #clockSub { right: 122px; top: 238px; font-size: 18px; color: #5F6370; text-align: right; }
+
+      /* ---------- S4 · 交付 ---------- */
+      #s4-head { left: 120px; top: 150px; font-size: 104px; line-height: 1.1; white-space: nowrap; }
+      #s4-head em { font-style: normal; color: #2B5CFF; }
+      #stage4 { position: absolute; inset: 0; perspective: 1800px; }
+      .doc { position: absolute; background: #FFFFFF; border: 2px solid rgba(21,23,28,0.12); border-radius: 12px;
+        box-shadow: 0 40px 90px rgba(43,60,120,0.14), 0 6px 18px rgba(21,23,28,0.06); overflow: hidden; }
+      .doc .hd { position: absolute; left: 32px; top: 26px; font-size: 16px; color: #5F6370; }
+      .doc .tt { position: absolute; left: 32px; top: 58px; font-size: 36px; font-weight: 700; white-space: nowrap; }
+      .ln { position: absolute; left: 32px; height: 10px; border-radius: 5px; background: #E9E6DF; }
+      #ppt { left: 640px; top: 360px; width: 760px; height: 428px; }
+      #ppt .band { position: absolute; left: 0; top: 0; bottom: 0; width: 14px; background: #2B5CFF; }
+      .bar4 { position: absolute; bottom: 58px; width: 54px; background: #2B5CFF; transform-origin: 50% 100%; border-radius: 4px 4px 0 0; }
+      .bar4.s { background: #DCE6FF; }
+      #pptAxis { position: absolute; left: 330px; right: 40px; bottom: 56px; height: 2px; background: #15171C; }
+      #rpt { left: 180px; top: 470px; width: 420px; height: 470px; }
+      #xls { left: 1440px; top: 300px; width: 380px; height: 420px; }
+      .cell { position: absolute; height: 2px; left: 0; right: 0; background: rgba(21,23,28,0.1); }
+      .xv { position: absolute; font-family: "IBM Plex Mono", monospace; font-size: 18px; color: #15171C; }
+      #note { left: 1300px; top: 800px; width: 560px; height: 120px; border-radius: 24px; background: #15171C; color: #F4F2ED; position: absolute;
+        box-shadow: 0 30px 70px rgba(21,23,28,0.25); }
+      #note .ic { position: absolute; left: 22px; top: 22px; width: 76px; height: 76px; border-radius: 18px; overflow: hidden; background: #DCE6FF; }
+      #note .ic img { width: 76px; height: 76px; display: block; }
+      #note .a { position: absolute; left: 120px; top: 24px; font-size: 26px; font-weight: 700; white-space: nowrap; }
+      #note .b { position: absolute; left: 120px; top: 66px; font-size: 20px; color: #B9BDC8; white-space: nowrap; }
+      #note .tm { position: absolute; right: 24px; top: 26px; font-family: "IBM Plex Mono", monospace; font-size: 18px; color: #B9BDC8; }
+
+      /* ---------- S5 · decide ---------- */
+      #s5-l1 { left: 0; width: 1920px; top: 250px; text-align: center; font-size: 40px; color: #5F6370; font-weight: 400; }
+      #s5-l2 { left: 0; width: 1920px; top: 330px; text-align: center; font-size: 150px; line-height: 1.1; white-space: nowrap; }
+      #s5-l2 .gap { display: inline-block; width: 330px; }
+      #seal { left: 1335px; top: 310px; width: 300px; height: 210px; transform-origin: 50% 50%; }
+      #seal .box { position: absolute; inset: 0; border: 7px solid #2B5CFF; border-radius: 12px; }
+      #seal .box::after { content: ""; position: absolute; inset: 7px; border: 2px solid rgba(43,92,255,0.55); border-radius: 6px; }
+      #seal .in { position: absolute; inset: 0; text-align: center; font-family: "Brand Serif", serif; font-weight: 900; font-size: 128px; line-height: 192px; color: #2B5CFF; letter-spacing: 0.02em; }
+      #sealInk { position: absolute; left: 1335px; top: 310px; width: 300px; height: 210px; border-radius: 30px; background: radial-gradient(closest-side, rgba(43,92,255,0.22), rgba(43,92,255,0)); transform: scale(0); }
+      #s5-rule { left: 760px; top: 640px; width: 400px; height: 2px; background: rgba(21,23,28,0.16); transform-origin: 50% 50%; }
+      #lock { left: 0; width: 1920px; top: 690px; height: 120px; }
+      #lockIcon { position: absolute; left: 632px; top: 4px; width: 112px; height: 112px; border-radius: 50%; overflow: hidden; }
+      #lockIcon img { width: 112px; height: 112px; display: block; }
+      #lockName { position: absolute; left: 772px; top: 10px; font-size: 84px; line-height: 1.1; font-weight: 700; white-space: nowrap; letter-spacing: 0.04em; }
+      #cta { left: 0; width: 1920px; top: 840px; text-align: center; font-size: 30px; color: #15171C; white-space: nowrap; }
+      #cta b { color: #2B5CFF; font-weight: 700; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="office-agent" data-start="0" data-duration="15" data-width="1920" data-height="1080">
+
+      <!-- ============ S1 · 一句话 ============ -->
+      <div class="scene" id="s1">
+        <div class="cam" id="cam1">
+          <div id="s1-dots"></div><div id="s1-glow"></div><div id="s1-ghost" class="abs serif">一句话</div>
+          <div id="s1-kicker" class="abs mono">acme work · 一句话派活</div>
+        </div>
+      </div>
+
+      <!-- ============ S2 · 拆解 ============ -->
+      <div class="scene" id="s2">
+        <div class="cam" id="cam2">
+          <div id="s2-head" class="abs serif">你说一句，它拆成<em>六步</em>。</div>
+          <div id="track">
+            <div id="trackLine"></div><div id="trackFill"></div>
+            <div class="node" id="nd0" style="left:121px"><div class="dot"><div class="fill"></div><span>01</span></div><div class="lab">读取数据</div><div class="st mono">进行中</div></div><div class="node" id="nd1" style="left:681px"><div class="dot"><div class="fill"></div><span>02</span></div><div class="lab">清洗 · 汇总</div><div class="st mono">进行中</div></div><div class="node" id="nd2" style="left:1241px"><div class="dot"><div class="fill"></div><span>03</span></div><div class="lab">生成图表</div><div class="st mono">进行中</div></div><div class="node" id="nd3" style="left:1801px"><div class="dot"><div class="fill"></div><span>04</span></div><div class="lab">撰写报告</div><div class="st mono">进行中</div></div><div class="node" id="nd4" style="left:2361px"><div class="dot"><div class="fill"></div><span>05</span></div><div class="lab">排版成演示稿</div><div class="st mono">进行中</div></div><div class="node" id="nd5" style="left:2921px"><div class="dot"><div class="fill"></div><span>06</span></div><div class="lab">定时发送</div><div class="st mono">进行中</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ S3 · 多端同步 ============ -->
+      <div class="scene" id="s3">
+        <div class="cam" id="cam3">
+          <div id="s3-head" class="abs serif">电脑合上了，活还在<em>继续</em>。</div>
+          <div id="s3-sub" class="abs"><b>合上电脑也不停</b>　｜　手机 · 电脑 · 网页同步</div>
+          <div id="clock" class="abs">23:40</div>
+          <div id="clockSub" class="abs mono">星期四 → 星期五</div>
+          <svg id="threadSvg" viewBox="0 0 1920 1080">
+            <path id="th1" d="M 900 640 C 960 560, 1000 560, 1040 560" />
+            <path id="th2" d="M 1250 560 C 1300 560, 1330 600, 1370 620" />
+          </svg>
+          <div class="dev" id="laptop">
+            <div id="lapRig"><div id="deck"><div class="kb"></div><div class="tp"></div></div><div id="lid"><div class="screen"><div class="task" id="lapTask"><div class="t">第42周 周报</div><div class="p"><i></i></div><div class="n"><span class="pct">12</span>% · 生成中</div></div></div><div id="lidBack"><img src="assets/logo.svg" alt="" /></div></div></div>
+            <div id="base"></div>
+            <div id="lapLabel" class="abs mono">本地电脑</div>
+          </div>
+          <div class="dev" id="cloud">
+            <svg viewBox="0 0 260 170"><path id="cloudPath" d="M70 150 H200 A50 50 0 0 0 196 52 A70 70 0 0 0 64 64 A44 44 0 0 0 70 150 Z" fill="#DCE6FF" stroke="#2B5CFF" stroke-width="4"/>
+            <circle id="cloudDot" cx="130" cy="104" r="12" fill="#2B5CFF"/></svg>
+          </div>
+          <div id="cloudLabel" class="abs mono">云端 · 运行中</div>
+          <div class="dev" id="phone">
+            <div class="screen"><div class="task" id="phTask"><div class="t">第42周 周报</div><div class="p"><i></i></div><div class="n"><span class="pct">12</span>%</div></div></div>
+            <div id="phLabel" class="abs mono">手机</div>
+          </div>
+          <div class="dev" id="web">
+            <div class="screen"><div class="chrome"><b style="left:18px"></b><b style="left:42px"></b><b style="left:66px"></b></div>
+            <div class="task" id="webTask"><div class="t">第42周 周报</div><div class="p"><i></i></div><div class="n"><span class="pct">12</span>% · 云端执行</div></div></div>
+            <div id="webLabel" class="abs mono">web</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ S4 · 交付 ============ -->
+      <div class="scene" id="s4">
+        <div class="cam" id="cam4">
+          <div id="s4-head" class="abs serif">醒来，已经<em>交付</em>。</div>
+          <div id="stage4">
+            <div class="doc" id="rpt"><div class="hd mono">周报</div><div class="tt">第42周 周报</div>
+              <div class="ln" style="top:130px;width:330px;background:#15171C;height:12px"></div>
+              <div class="ln" style="top:172px;width:356px"></div><div class="ln" style="top:200px;width:300px"></div><div class="ln" style="top:228px;width:340px"></div>
+              <div class="ln" style="top:280px;width:200px;background:#2B5CFF;height:12px"></div>
+              <div class="ln" style="top:322px;width:356px"></div><div class="ln" style="top:350px;width:280px"></div><div class="ln" style="top:378px;width:320px"></div><div class="ln" style="top:406px;width:240px"></div>
+            </div>
+            <div class="doc" id="ppt"><div class="band"></div><div class="hd mono">演示文稿 · 套用公司模板</div><div class="tt">Q3 复盘</div>
+              <div class="ln" style="top:136px;width:240px;left:46px"></div><div class="ln" style="top:164px;width:200px;left:46px"></div><div class="ln" style="top:192px;width:220px;left:46px"></div>
+              <div class="ln" style="top:250px;width:150px;left:46px;background:#2B5CFF"></div>
+              <div id="pptAxis"></div>
+              <div class="bar4 s" style="left:350px;height:120px"></div><div class="bar4" style="left:420px;height:170px"></div>
+              <div class="bar4 s" style="left:500px;height:150px"></div><div class="bar4" style="left:570px;height:250px"></div>
+              <div class="bar4 s" style="left:650px;height:190px"></div><div class="bar4" style="left:720px;height:300px"></div>
+            </div>
+            <div class="doc" id="xls"><div class="hd mono">表格</div><div class="tt">渠道数据汇总</div>
+              <div class="cell" style="top:162px"></div><div class="xv" style="left:32px;top:128px;color:#15171C">A</div><div class="xv" style="left:150px;top:128px;color:#15171C">120</div><div class="xv" style="left:280px;top:128px;color:#15171C">3.0%</div><div class="cell" style="top:208px"></div><div class="xv" style="left:32px;top:174px;color:#15171C">B</div><div class="xv" style="left:150px;top:174px;color:#15171C">90</div><div class="xv" style="left:280px;top:174px;color:#15171C">2.5%</div><div class="cell" style="top:254px"></div><div class="xv" style="left:32px;top:220px;color:#15171C">C</div><div class="xv" style="left:150px;top:220px;color:#15171C">70</div><div class="xv" style="left:280px;top:220px;color:#15171C">4.0%</div><div class="cell" style="top:300px"></div><div class="xv" style="left:32px;top:266px;color:#2B5CFF">TOTAL</div><div class="xv" style="left:150px;top:266px;color:#2B5CFF">280</div><div class="xv" style="left:280px;top:266px;color:#2B5CFF">3.1%</div>
+            </div>
+            <div id="note"><div class="ic"><img src="assets/logo.svg" alt="" /></div><div class="a">周报已发送给 团队（12人）</div><div class="b">PPT 与数据表已附上</div><div class="tm">08:52</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ S5 · decide ============ -->
+      <div class="scene" id="s5">
+        <div class="cam" id="cam5">
+          <div id="s5-l1" class="abs">重复的活儿交给它，</div>
+          <div id="s5-l2" class="abs serif">你只负责思考和<span class="gap"></span></div>
+          <div id="sealInk"></div>
+          <div id="seal" class="abs"><div class="box"></div><div class="in">决定</div></div>
+          <div id="s5-rule" class="abs"></div>
+          <div id="lock" class="abs"><div id="lockIcon"><img src="assets/logo.svg" alt="" /></div><div id="lockName">Acme 工作台</div></div>
+          <div id="cta" class="abs">下载电脑版　·　<b>免费试用</b></div>
+        </div>
+      </div>
+
+      <!-- the order: one sentence that persists across S1 → S2 -->
+      <div id="pulse"></div>
+      <div id="bar">
+        <div id="barIcon"><img src="assets/logo.svg" alt="" /></div>
+        <div id="barText"><span class="ch">把</span><span class="ch">这</span><span class="ch">周</span><span class="ch">的</span><span class="ch">数</span><span class="ch">据</span><span class="ch">整</span><span class="ch">理</span><span class="ch">成</span><span class="ch">报</span><span class="ch">告</span><span class="ch">，</span><span class="ch">做</span><span class="ch">成</span><span class="ch">演</span><span class="ch">示</span><span class="ch">稿</span><span class="ch">，</span><span class="ch">明</span><span class="ch">早</span><span class="ch">发</span><span class="ch">给</span><span class="ch">大</span><span class="ch">家</span><span class="ch">。</span><span id="caret"></span></div>
+        <div id="send"><i></i></div>
+      </div>
+
+      <div id="night"></div>
+      <div id="falloff"></div>
+      <div id="grain"></div>
+      <div class="corner mono" id="tl">Acme 工作台</div>
+      <div class="corner mono" id="tr"><b id="chapN">01</b> / 05</div>
+      <div class="corner mono" id="bl">一句话派活 · 自动执行 · 交付成果</div>
+      <div class="corner mono" id="br">acme.example</div>
+      <div id="rail"><div id="railFill"></div></div>
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+      var tl = gsap.timeline({ paused: true });
+      var B = 0.5; // one beat = 0.5s (120 BPM); every cut lands on the grid
+
+      /* chrome */
+      tl.fromTo("#railFill", { scaleX: 0 }, { scaleX: 1, duration: 15, ease: "none" }, 0);
+      tl.to("#grain", { x: 26, y: -20, duration: 15, ease: "steps(45)" }, 0);
+      [["02", 3.0], ["03", 6.0], ["04", 9.5], ["05", 12.5]].forEach(function (c) {
+        tl.set("#chapN", { textContent: c[0] }, c[1]);
+      });
+
+      /* ============ S1 · 一句话 (0 – 3.0) ============ */
+      tl.fromTo("#cam1", { scale: 1.04 }, { scale: 1.0, duration: 3, ease: "power2.out" }, 0);
+      tl.fromTo("#s1-ghost", { x: 60 }, { x: -80, duration: 3.2, ease: "none" }, 0);
+      tl.fromTo("#s1-dots", { x: 0, y: 0 }, { x: -48, y: -24, duration: 3.2, ease: "none" }, 0);
+      tl.fromTo("#s1-glow", { scale: 0.7, opacity: 0.4 }, { scale: 1.15, opacity: 1, duration: 2.6, ease: "sine.inOut" }, 0);
+      tl.fromTo("#bar", { y: 60, opacity: 0, scale: 0.96 }, { y: 0, opacity: 1, scale: 1, duration: 0.7, ease: "expo.out" }, 0.1);
+      tl.fromTo("#s1-kicker", { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 0.3);
+      var chars = document.querySelectorAll("#barText .ch");
+      var T_TYPE = 0.55, PER = 1.75 / chars.length;
+      chars.forEach(function (c, i) { tl.set(c, { opacity: 1 }, T_TYPE + i * PER); });
+      // caret blinks only while idle
+      tl.to("#caret", { opacity: 0, duration: 0.01 }, 0.30); tl.to("#caret", { opacity: 1, duration: 0.01 }, 0.45);
+      tl.to("#caret", { opacity: 0, duration: 0.01 }, 2.45);
+      tl.fromTo("#send", { scale: 1 }, { scale: 0.86, duration: 0.08, ease: "power2.in" }, 2.5);
+      tl.to("#send", { scale: 1, duration: 0.3, ease: "back.out(3)" }, 2.58);
+      tl.fromTo("#pulse", { opacity: 0.9, scale: 0.6 }, { opacity: 0, scale: 3.2, duration: 0.7, ease: "power2.out" }, 2.5);
+
+      /* the order docks to the top-left and stays as the brief for S2 */
+      tl.to("#bar", { x: -140, y: -340, scale: 0.62, duration: 0.6, ease: "expo.inOut" }, 2.75);
+      tl.to("#s1", { opacity: 0, duration: 0.4, ease: "power1.in" }, 2.8);
+
+      /* ============ S2 · 拆解 (3.0 – 6.0) ============ */
+      tl.set("#s2", { opacity: 1 }, 2.9);
+      tl.fromTo("#s2-head", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.6, ease: "expo.out" }, 3.0);
+      tl.fromTo("#track", { x: 0 }, { x: -1460, duration: 3.3, ease: "power1.inOut" }, 3.0);
+      tl.fromTo("#trackFill", { scaleX: 0 }, { scaleX: 1, duration: 2.9, ease: "power1.inOut" }, 3.05);
+      for (var i = 0; i < 6; i++) {
+        var t = 3.0 + i * B;
+        tl.fromTo("#nd" + i, { opacity: 0, y: 50 }, { opacity: 1, y: 0, duration: 0.45, ease: "power4.out" }, t);
+        tl.fromTo("#nd" + i + " .fill", { scale: 0 }, { scale: 1, duration: 0.35, ease: "back.out(2)" }, t + 0.35);
+        tl.to("#nd" + i + " .dot", { color: "#FFFFFF", duration: 0.2 }, t + 0.4);
+        tl.set("#nd" + i + " .st", { textContent: "已完成" }, t + 0.45);
+      }
+      tl.to("#bar", { opacity: 0, y: -400, duration: 0.45, ease: "power2.in" }, 5.6);
+
+      /* exit S2 sideways, S3 continues the same lateral move */
+      tl.to("#cam2", { x: -700, opacity: 0, duration: 0.55, ease: "power3.in" }, 5.6);
+
+      /* ============ S3 · 多端同步 (6.0 – 9.5) ============ */
+      tl.set("#s3", { opacity: 1 }, 5.85);
+      tl.fromTo("#cam3", { x: 760 }, { x: 0, duration: 0.85, ease: "expo.out" }, 5.85);
+      tl.fromTo("#s3-head", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.6, ease: "expo.out" }, 6.6);
+      tl.fromTo("#s3-sub", { opacity: 0 }, { opacity: 1, duration: 0.5, ease: "power1.out" }, 7.0);
+      // lid closes on the beat
+      tl.fromTo("#lid", { rotationX: 0 }, { rotationX: -90, duration: 0.55, ease: "power3.in" }, 6.5);
+      tl.to("#lapLabel", { textContent: "本地电脑 · 已合上", duration: 0.01 }, 7.05);
+      tl.fromTo("#night", { opacity: 0 }, { opacity: 1, duration: 0.8, ease: "power1.inOut" }, 6.6);
+      tl.to("#night", { opacity: 0, duration: 1.0, ease: "power1.inOut" }, 8.6);
+      // the task hops to the cloud, then fans out to the phone + web
+      ["#th1", "#th2"].forEach(function (p, k) {
+        var el = document.querySelector(p), len = el.getTotalLength();
+        tl.fromTo(p, { attr: { "stroke-dashoffset": len, "stroke-dasharray": len + " " + len } },
+          { attr: { "stroke-dashoffset": 0 }, duration: 0.4, ease: "power2.out" }, 7.0 + k * 0.5);
+      });
+      tl.fromTo("#cloud", { opacity: 0, scale: 0.7 }, { opacity: 1, scale: 1, duration: 0.5, ease: "back.out(2)" }, 7.0);
+      tl.fromTo("#cloudLabel", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 7.2);
+      tl.fromTo("#cloudDot", { attr: { r: 8 } }, { attr: { r: 18 }, duration: 0.5, ease: "sine.inOut", yoyo: true, repeat: 3 }, 7.2);
+      tl.fromTo("#phone", { opacity: 0, y: 70, rotation: 6 }, { opacity: 1, y: 0, rotation: 0, duration: 0.55, ease: "power4.out" }, 7.5);
+      tl.fromTo("#phLabel", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 7.7);
+      tl.to("#phone", { x: -110, duration: 0.5, ease: "expo.inOut" }, 8.0);
+      tl.fromTo("#web", { opacity: 0, x: 140, y: 40 }, { opacity: 1, x: 220, y: 40, duration: 0.55, ease: "power4.out" }, 8.0);
+      // one progress value, three screens — that's the sync
+      var prog = { v: 12 };
+      var pcts = document.querySelectorAll("#s3 .pct"), bars = document.querySelectorAll("#s3 .p i");
+      tl.to(prog, { v: 100, duration: 2.6, ease: "power1.inOut", onUpdate: function () {
+        var v = Math.round(prog.v);
+        pcts.forEach(function (e) { e.textContent = v; });
+        bars.forEach(function (b) { b.style.transform = "scaleX(" + (prog.v / 100) + ")"; });
+      } }, 6.6);
+      // night passes: 23:40 → 08:52
+      var clk = { m: 23 * 60 + 40 }, clkEl = document.getElementById("clock");
+      tl.to(clk, { m: 24 * 60 + 8 * 60 + 52, duration: 2.4, ease: "power2.inOut", onUpdate: function () {
+        var m = Math.round(clk.m) % 1440, h = Math.floor(m / 60), mm = m % 60;
+        clkEl.textContent = (h < 10 ? "0" : "") + h + ":" + (mm < 10 ? "0" : "") + mm;
+      } }, 6.7);
+      tl.fromTo(["#clock", "#clockSub"], { opacity: 0 }, { opacity: 1, duration: 0.4 }, 6.6);
+      tl.to("#cam3", { scale: 1.035, duration: 2.45, ease: "none" }, 6.7);
+
+      /* zoom through the web window into the deliverables */
+      tl.to("#cam3", { scale: 3.2, x: -1500, y: -150, duration: 0.45, ease: "power3.in" }, 9.15);
+      tl.to("#cam3", { opacity: 0, duration: 0.2, ease: "power1.in" }, 9.4);
+
+      /* ============ S4 · 交付 (9.5 – 12.5) ============ */
+      tl.fromTo("#s4", { opacity: 0 }, { opacity: 1, duration: 0.2, ease: "power1.out" }, 9.45);
+      tl.fromTo("#cam4", { scale: 0.88 }, { scale: 1.0, duration: 1.0, ease: "expo.out" }, 9.45);
+      tl.to("#cam4", { scale: 1.04, duration: 2.0, ease: "none" }, 10.45);
+      tl.fromTo("#s4-head", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.6, ease: "expo.out" }, 9.6);
+      tl.fromTo("#ppt", { opacity: 0, rotationY: -28, rotationX: 10, z: -400, y: 80 }, { opacity: 1, rotationY: -8, rotationX: 4, z: 0, y: 0, duration: 0.8, ease: "expo.out" }, 9.5);
+      tl.fromTo("#rpt", { opacity: 0, rotationY: 30, z: -500, x: -80 }, { opacity: 1, rotationY: 12, z: -120, x: 0, duration: 0.8, ease: "expo.out" }, 10.0);
+      tl.fromTo("#xls", { opacity: 0, rotationY: -30, z: -500, x: 80 }, { opacity: 1, rotationY: -16, z: -160, x: 0, duration: 0.8, ease: "expo.out" }, 10.5);
+      tl.fromTo(".bar4", { scaleY: 0 }, { scaleY: 1, duration: 0.6, stagger: 0.07, ease: "power3.out" }, 9.85);
+      tl.fromTo(".xv", { opacity: 0 }, { opacity: 1, duration: 0.25, stagger: 0.025 }, 10.75);
+      tl.fromTo("#note", { opacity: 0, y: 60, scale: 0.94 }, { opacity: 1, y: 0, scale: 1, duration: 0.55, ease: "back.out(1.6)" }, 11.0);
+      // everything gathers into one decision point
+      tl.to(["#ppt", "#rpt", "#xls", "#note"], { scale: 0.2, opacity: 0, x: 0, duration: 0.45, ease: "power3.in", stagger: 0.04 }, 12.05);
+      tl.to("#s4-head", { opacity: 0, y: -30, duration: 0.35, ease: "power2.in" }, 12.05);
+
+      /* ============ S5 · decide (12.5 – 15) ============ */
+      tl.set("#s5", { opacity: 1 }, 12.45);
+      tl.fromTo("#s5-l1", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 12.5);
+      tl.fromTo("#s5-l2", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.6, ease: "expo.out" }, 12.75);
+      // the stamp: lift, slam on the downbeat, ink spreads, frame shakes once
+      tl.fromTo("#seal", { opacity: 0, scale: 2.4, rotation: -9 }, { opacity: 1, scale: 1, rotation: -2, duration: 0.25, ease: "power4.in" }, 13.25);
+      tl.fromTo("#sealInk", { scale: 0.6, opacity: 1 }, { scale: 1.5, opacity: 0, duration: 0.7, ease: "power2.out" }, 13.5);
+      tl.fromTo("#cam5", { y: 0 }, { y: 7, duration: 0.05, ease: "none" }, 13.5);
+      tl.to("#cam5", { y: -4, duration: 0.06, ease: "none" }, 13.55);
+      tl.to("#cam5", { y: 0, duration: 0.12, ease: "power2.out" }, 13.62);
+      tl.fromTo("#s5-rule", { scaleX: 0 }, { scaleX: 1, duration: 0.5, ease: "expo.inOut" }, 13.75);
+      tl.fromTo("#lock", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.6, ease: "expo.out" }, 14.0);
+      tl.fromTo("#cta", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 14.25);
+      tl.to("#cam5", { scale: 1.02, duration: 1.2, ease: "sine.out" }, 13.8);
+
+      tl.seek(0);
+      window.__timelines["office-agent"] = tl;
+    </script>
+  </body>
+</html>
