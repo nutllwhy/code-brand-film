@@ -39,6 +39,22 @@ icon packs) — they are often years out of date; screenshots of search results;
 AI-generated "brand-like" images; anything you drew yourself to look like the
 logo.
 
+**Harvest the product page in one go.** Product pages hide most of their
+images in `srcset`, `data-src`, CSS backgrounds and JSON blobs; reading `<img
+src>` finds about a third. Run
+
+```bash
+python3 <skill>/scripts/harvest_page_images.py <product-page-url> [<regional-page-url>] --out research
+```
+
+It saves the pages, downloads every image (deduped), writes `index.tsv`
+(number, size, URL) and contact sheets of everything ≥ 900px wide. One real
+product page gave 250 images: product shots on black, sample footage, UI
+close-ups, and the logo and product wordmark as inline SVG. Look at the
+sheets, pick by number, copy the URL into `assets.md`. Open every `.svg` — the
+logo and the product's own wordmark are usually among them, already in the
+light and dark variants.
+
 ## 2. Is it the right logo? Check before you use it
 
 A file called `logo.svg` is not proof. Answer all five in `assets.md`:
@@ -72,6 +88,14 @@ rejected film — one was delivered with the camera drawn as a rounded rectangle
 and the maker's name typed in a font instead of its logo. Official product
 pages always carry these images; look in the page's `<img>` / `srcset` /
 `og:image` and the press or media centre.
+
+**Product photos on black.** Hardware pages usually shoot the product on pure
+black. Do not cut it out — make the stage the same black and lift the photo's
+shadows with a curve (e.g. Pillow `point(lambda v: 255*((v/255)**0.8))`) so
+the edges read on a phone. A cut-out with a hand-made mask looks pasted; the
+original black ground melts into the stage. Choose images where the product is
+shot from different angles (front, three-quarter, the mechanism/X-ray view)
+so act 1 and the landing do not repeat the same angle.
 
 If you truly find nothing beyond the logo (a brand with no site, a product not
 launched yet), write `imagery: none found` in `assets.md` followed by every

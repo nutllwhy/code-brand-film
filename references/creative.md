@@ -23,6 +23,7 @@ Two real examples, both delivered and both accepted:
 | Film | The sentence | The move | The film |
 | --- | --- | --- | --- |
 | A · memory-first AI assistant (dark) | "What stays with you, shapes what comes next." | The logo is a blob with an off-centre hole. Treat that hole as a camera lens: dive into it at the start, collapse the whole world back into it at the end. | 5 acts: FORGET (text falls apart) → REMEMBER (floating memory cards in the lens) → ACT (verbs firing) → IMPRINT (official imagery through an iris) → LOCKUP (everything falls back into the hole) |
+| C · pocket gimbal camera (dark, hardware) | The product's official slogan, used as the opening line. | The device has a flip-out screen: go **in through its own screen**, and the rest of the film is what that screen sees. | 5 acts: product photo pulled out of a macro close-up with a light sweep → footage appears on the device's screen, camera dives through it → viewfinder HUD over four official sample shots, one feature proven per shot → zoom button 1×→2× and the frame pushes 2× → stabiliser mechanism, then wordmark + logo + slogan |
 | B · office-automation agent (light) | The product's key line ends on a decision verb ("…and you make the call"). | Take that last verb literally. Make it an actual stamp that slams on the final downbeat. | 5 acts: one sentence typed → six pipeline steps → laptop shut, work keeps running in the cloud → deliverables arrive → the stamp |
 
 The test: can you say the film's idea in one sentence that contains a *physical
@@ -45,6 +46,15 @@ screen. A verb is not enough by itself:
 | "A drop of ink becomes lines, becomes shapes, becomes a flower." | Rejected. Same failure: pure abstraction, 3% of the frame lit. |
 | "Dive through the logo's hole." | Accepted. Through the lens you see the product's memory cards and the brand's own imagery. |
 | "The work goes on while the lid is shut; you just stamp it." | Accepted. Each act shows a real step: typed instruction, pipeline, synced devices, finished files. |
+
+**Hardware has no interface to show — its output is the interface.** For a
+camera, headphones, a projector: acts 2–4 are what the product produces (the
+footage, framed by its own viewfinder HUD; the sound, as a waveform the
+picture cuts to), and every feature line on screen gets a shot that proves it
+(see recipes 21–22). Product photo and footage placed side by side — device
+on the left, a framed clip on the right — was rejected in review as a slide;
+go *through* the product to its output instead of placing them next to each
+other.
 
 Test it: describe act 3 to someone without saying the metaphor. If what is left
 is "shapes move", rewrite it until it is "the spreadsheet fills itself while the

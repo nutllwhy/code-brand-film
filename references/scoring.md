@@ -94,6 +94,26 @@ ffmpeg -y -v error -i audio/score.wav \
   -map "[out]" -ar 48000 audio/mix.wav
 ```
 
+**No SFX library? Synthesise the hits.** Every effect a brand film needs can
+be a few lines of numpy, and then each one sits exactly on its frame: a
+pitch-dropping sine for the sub hit (55 Hz × (1 + 2.5·e^(−30t))), noise through
+a band that sweeps up for a whoosh (pan it the direction the picture moves), a
+two-click high-passed noise burst for a shutter, a 2–3 kHz sine blip for a
+button press, a ring of inharmonic partials (1, 2.76, 5.4) for the bell. Start
+the score file by copying the film's event times from the timeline into a
+comment and place every hit from that list — that list *is* the arrangement.
+
+**Hit true peak exactly: two-pass loudnorm.** One pass overshoots (a real mix
+measured −13.3 LUFS / −0.5 dBFS after a single pass at TP=−1). Measure first,
+then apply with `linear=true`:
+
+```bash
+J=$(ffmpeg -hide_banner -i in.wav -af loudnorm=I=-14:TP=-1.5:LRA=11:print_format=json -f null - 2>&1 | sed -n '/{/,/}/p')
+g(){ echo "$J" | python3 -c "import json,sys;print(json.load(sys.stdin)['$1'])"; }
+ffmpeg -y -v error -i in.wav -af "loudnorm=I=-14:TP=-1.5:LRA=11:measured_I=$(g input_i):measured_TP=$(g input_tp):measured_LRA=$(g input_lra):measured_thresh=$(g input_thresh):offset=$(g target_offset):linear=true" -ar 48000 audio/mix.wav
+```
+That lands at about −13.8 LUFS / −1.0 dBFS.
+
 `loudnorm` needs `atrim` before it — it buffers and will stretch the output if it
 never sees the end. Every fx input needs `aresample=48000`, because the library
 files are 44.1 kHz and mismatched rates shift `adelay`.

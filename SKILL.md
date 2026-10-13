@@ -96,7 +96,12 @@ Seeing how much one 15s film contains is worth more than any rule here.
    images, at least one showing the real product. Run the five-point logo check
    (right product, current version, right variant, untouched, resolution) and
    write it all into `assets.md` with source URLs. Never redraw a logo, never
-   take one from a logo-aggregator site.
+   take one from a logo-aggregator site. Start with
+   `scripts/harvest_page_images.py <product-page>` — it pulls every image and
+   SVG the page uses and makes numbered contact sheets to pick from.
+   **Physical product?** It appears as its official photo every time it is on
+   screen; acts 2–4 show its *output* through its own UI, and each feature line
+   gets a proof shot (`creative.md` example C, `recipes.md` 20–23).
 2. **Find the metaphor** — one sentence with a physical verb, ideally taken
    from the brand's own asset or the selling line's own words (`creative.md`).
 3. **Write `shot-list.md` and `copy.md`** in the film project (next to `film/`;
@@ -184,6 +189,7 @@ python3 <skill>/scripts/frame_audit.py renders/silent.mp4        # pixel gate: m
 scripts/film_audit.py       code gate, before render (floors, shot list, copy and asset sources)
 scripts/layout_audit.mjs    placement gate, headless Chrome (hidden / colliding / clipped text, safe area, half-parked cards)
 scripts/frame_audit.py      pixel gate, after render (coverage, detail, motion)
+scripts/harvest_page_images.py  every image on an official product page → index.tsv + contact sheets
 scripts/fetch_cjk_fonts.sh  Noto Serif/Sans SC subsets for exactly the characters used
 scripts/build_template.py   template → film/index.html + CJK character list
 scripts/review_frames.sh    render → contact sheet + stills + duration check

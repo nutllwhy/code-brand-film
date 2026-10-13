@@ -35,6 +35,10 @@ unless you have a reason — they are what make each move read correctly.
 17. Stamp slam + camera shake
 18. Lockup (blur-in wordmark, rule, CTA)
 19. Ambient motion (so no frame is static)
+20. Screen portal (go in through the product's own screen)
+21. Viewfinder / device HUD over footage
+22. Claim-proof shots (log → graded wipe, lossless zoom, meter)
+23. Light sweep across a product photo
 
 ---
 
@@ -332,3 +336,91 @@ tl.fromTo("#cloudDot", { attr: { r: 8 } }, { attr: { r: 18 }, duration: 0.5, eas
 ```
 A giant, 4–5%-opacity word behind the content (`font-size: 300px`) plus a dot
 grid moving at a different speed is the cheapest way to get three depth layers.
+
+## 20. Screen portal (go in through the product's own screen)
+
+The strongest transition for any device with a display (camera, phone, watch,
+laptop, car dashboard): the next act starts *inside* the screen of the product
+photo, and the camera pushes until that screen is the frame. It is a
+zoom-through whose target is the product itself, so the transition sells it.
+
+Measure the screen glass in the photo's own pixels (open the image, read the
+corners), then drive one proxy that scales the camera *and* recomputes the
+clip of the next scene every frame, so the footage stays locked to the glass:
+
+```js
+// screen glass inside #cam1 (the product photo layer), local px; ox/oy = its centre
+const SC = { l: 816, r: 1036, t: 456, b: 592, ox: 926, oy: 524 };
+tl.set("#cam1", { transformOrigin: SC.ox + "px " + SC.oy + "px" }, 2.4);
+const zoom = { k: 1, x: 230 };
+const place = () => {
+  const k = zoom.k, X = zoom.x;
+  gsap.set("#cam1", { scale: k, x: X });
+  const L = SC.ox + k * (SC.l - SC.ox) + X, R = SC.ox + k * (SC.r - SC.ox) + X,
+        T = SC.oy + k * (SC.t - SC.oy),     B = SC.oy + k * (SC.b - SC.oy);
+  gsap.set("#s3", { clipPath: `inset(${Math.max(0,T)}px ${Math.max(0,1920-R)}px ${Math.max(0,1080-B)}px ${Math.max(0,L)}px round ${Math.min(10*k,40)}px)` });
+};
+tl.set("#s3", { opacity: 1 }, 2.75);                                            // footage appears on the glass
+tl.fromTo(zoom, { k: 1, x: 230 }, { k: 1.18, x: 200, duration: 1.5, ease: "sine.inOut", onUpdate: place, immediateRender: false }, 2.75); // hold, breathe
+tl.to(zoom, { k: 13, x: 30, duration: 0.85, ease: "expo.in", onUpdate: place }, 4.25);  // dive
+tl.to("#cam1", { opacity: 0, duration: 0.25 }, 4.85);
+tl.set("#s3", { clipPath: "inset(0px round 0px)" }, 5.1);                       // land: full frame, downbeat
+```
+Rules: the footage inside the glass must already be moving (its own slow
+scale) before the dive, or it reads as a sticker. Land on a downbeat with a
+flash or a sub hit. Check the glass corners at k=1 by screenshot — 4px off is
+visible.
+
+## 21. Viewfinder / device HUD over footage
+
+For hardware, "the product doing its work" is its *output*, framed by its own
+interface. Put a thin HUD over the footage acts: corner brackets, REC dot +
+running timecode, a mode tag that changes per shot (`D-LOG`, `4K 240`, `2×`).
+Keep it at 56px insets, 2px lines, mono font, 70–85% white; it is a frame, not
+content. Brackets pop in once (`scale 1.6 → 1`, `expo.out`, stagger 0.04), the
+timecode counts every frame, the mode tag swaps on each cut with a 0.1s
+mask-wipe. The HUD also hides the seams of very different footage — it makes
+four official sample shots read as one camera's day.
+
+```js
+const tc = { f: 0 };
+tl.to(tc, { f: 6 * 30, duration: 6, ease: "none", onUpdate: () => {
+  const f = Math.floor(tc.f), s = Math.floor(f / 30);
+  document.querySelector("#tc").textContent = `00:00:${String(s).padStart(2,"0")}:${String(f % 30).padStart(2,"0")}`;
+} }, 5.1);
+```
+
+## 22. Claim-proof shots
+
+A feature line on screen needs a picture that proves it in under a second.
+Three that work:
+
+- **Log → graded wipe** ("10-bit log", "HDR", "colour science"): the same image
+  twice, the top copy desaturated and flattened (`filter: saturate(.25)
+  contrast(.72) brightness(1.08)`), revealed by a vertical line sweeping
+  `clip-path: inset(0 0 0 100%) → inset(0 0 0 0)` over ~0.8s, `power2.inOut`.
+  Put a 2px white line on the wipe edge.
+- **Lossless zoom** ("2× zoom", "48MP crop"): a scale push from 1 to 2 on an
+  image whose source is at least 2× the frame (a 4K official still for a 1080p
+  film). If the source is only 1920 wide the push shows mush and contradicts
+  the claim — pick another image. `transformOrigin` on the subject, `expo.inOut`.
+- **Meter** ("14 stops", "1000 nits", "48 h battery"): a row of segments that
+  light one per frame (`tl.set` each with 0.045s spacing). Counting things up
+  is more believable than a big number.
+
+## 23. Light sweep across a product photo
+
+A specular band crossing the product sells "premium hardware" in 0.8s. Use a
+blend layer, never a luminance mask (a mask leaves a grey haze over the black
+ground):
+
+```css
+#sweep { position:absolute; inset:0; mix-blend-mode: color-dodge; opacity:0; pointer-events:none;
+  background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,.55) 50%, transparent 60%) no-repeat;
+  background-size: 1300px 100%; }
+```
+```js
+tl.fromTo("#sweep", { opacity: 1, backgroundPosition: "1300px 0" }, { backgroundPosition: "-2600px 0", duration: 1.1, ease: "power2.inOut" }, 0.9);
+```
+color-dodge only brightens what is already lit, so the band rides the edges of
+the product and leaves the black ground black.

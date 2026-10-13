@@ -140,6 +140,18 @@ Check for these specifically, because each one has actually shipped before:
   the build does not regenerate the subset, the fallback font's metrics push a
   line into an overlap.
 
+Two traps in the review tooling itself:
+
+- **A vision model reading a contact sheet raises false alarms.** On a 6×5
+  sheet of thumbnails it called four frames "black / glitched" that were fine.
+  Before changing anything, map the flagged cell to its timestamp
+  (`t = (row·cols + col) / fps`), extract that frame full size with
+  `ffmpeg -ss t -i silent.mp4 -frames:v 1`, and look again. Fix only what
+  survives the full-size look.
+- **Puppeteer hangs on `page.evaluate(t => tl.seek(t))`.** An arrow with an
+  expression body returns the GSAP timeline, which is circular and never
+  serialises. Always use a block body: `t => { tl.seek(t, false); }`.
+
 ## Music and mixing is a separate pass
 
 Score synthesis is its own step — see `scoring.md`. The order is:
