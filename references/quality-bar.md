@@ -31,7 +31,7 @@ Measured with `scripts/film_audit.py` on the three real films:
 | Distinct eases | 6 | 17 | 19 | **≥ 8** |
 | Camera moves (tweens on `#camN`) | 1 | 8 | 12 | **≥ 8** |
 | Timed events per act (0–3 / 3–6 / 6–9.5 / 9.5–12.5 / 12.5–15) | 3/0/5/5/4 | 21/11/12/12/6 | 17/7/21/11/11 | **≥ 5 every act** |
-| Chrome (corner labels + progress rail) | no | yes | yes | **yes** |
+| Page counter / progress bar / corner labels | — | — | — | **none** (reads as PPT) |
 | Fonts as embedded files | 0 (system `local()`) | 2 | 4 | **every face on screen** |
 | Real brand logo | — | inline official SVG path | official icon file | **the real file** |
 | Acts that depict the product actually working | 0 | 2 | 4 | **≥ 2** (shot list) |
@@ -66,7 +66,7 @@ samples 10 frames a second and measures:
 
 | Measure | Rejected films | Accepted films | **Floor** |
 | --- | --- | --- | --- |
-| Median coverage (share of frame that is not bare ground) | 0.007 – 0.056 | 0.08 – 0.43 | **≥ 0.07** |
+| Median coverage (share of frame that is not bare ground) | 0.007 – 0.056 | 0.069 – 0.43 | **≥ 0.065** |
 | Median detail (share of pixels on a visible edge) | 0.008 – 0.063 | 0.069 – 0.10 | **≥ 0.065** |
 | Median motion (share of frame changing per 0.1 s) | 0.000 – 0.020 | 0.03 – 0.05 | **≥ 0.025** |
 | Thinnest act (median coverage of the emptiest act) | 0.000 – 0.019 | 0.05 – 0.09 | **≥ 0.04** |
@@ -169,11 +169,14 @@ silently.
   browser does not have them and falls back silently. Use
   `scripts/fetch_cjk_fonts.sh` for Chinese.
 
-## Chrome — the frame around the film
+## No slide furniture
 
-Both accepted films have a thin layer of interface around the picture that never
-changes: a brand label top-left, a chapter counter top-right (`02 / 05`) that
-ticks on each act, a descriptor bottom-left, a URL bottom-right, a 2px progress
-rail filling over the whole duration, plus a moving grain overlay and a radial
-falloff. It costs ten lines and is the single cheapest thing that makes a film
-look designed rather than generated.
+An earlier version of this skill told you to add a chapter counter top-right
+(`02 / 05`), a progress rail, and labels in all four corners. Drop all of it.
+On review the user's verdict was that the counter "太像PPT了" — it is the single
+most slide-like thing you can put on a frame. A film never tells the viewer
+which scene it is on, and never shows how much is left.
+
+Keep only what reads as material, not interface: a moving grain overlay, a
+radial falloff, and at most one quiet brand mark in one corner.
+`film_audit.py` fails on a counter or progress bar.

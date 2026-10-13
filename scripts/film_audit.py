@@ -173,8 +173,12 @@ def main() -> int:
     grain_moves = bool(re.search(r'["\']#grain["\'][^;]*steps\(', js))
     if has_grain and not grain_moves:
         warns.append('grain is static — animate it with ease: "steps(N)" over the whole film')
-    has_chrome = bool(re.search(r'id="(?:progress|rail)', html)) and len(re.findall(r'class="[^"]*\b(?:corner|chap|barTxt)\b', html)) >= 2
-    check('chrome (corner labels + progress rail)', 'yes' if has_chrome else 'no', 'yes', has_chrome)
+    # slide furniture: a scene counter ("02 / 05") or a progress bar makes a film read as a deck
+    counter = bool(re.search(r'id="chap\w*"', html)) or bool(re.search(r'>\s*0?\d\s*<[^>]*>\s*/\s*0?\d\s*<|>\s*0?\d\s*/\s*0\d\s*<|</b>\s*/\s*0\d', html))
+    rail = bool(re.search(r'id="(?:progress\w*|rail\w*)"', html))
+    furniture = [x for x, on in (('scene counter', counter), ('progress bar', rail)) if on]
+    check('no slide furniture (counter / progress bar)', ', '.join(furniture) or 'none', 'none', not furniture,
+          'remove it — reads as PPT' if furniture else '')
 
     # ---- real assets
     faces = re.findall(r'@font-face\s*\{(.*?)\}', css, flags=re.S)

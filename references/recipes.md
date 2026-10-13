@@ -16,7 +16,7 @@ unless you have a reason — they are what make each move read correctly.
 
 ## Contents
 
-1. Global chrome (progress rail, grain, chapter counter)
+1. Texture layer (grain, falloff) — and what not to add
 2. Line mask reveal
 3. Character typing + caret + send pulse
 4. Letter scatter
@@ -38,16 +38,18 @@ unless you have a reason — they are what make each move read correctly.
 
 ---
 
-## 1. Global chrome
+## 1. Texture layer
 
 ```html
 <div id="grain"></div><div id="falloff"></div>
-<div class="corner mono" id="tl">BRAND</div>
-<div class="corner mono" id="tr"><b id="chapN">01</b> / 05</div>
-<div class="corner mono" id="bl">one-line descriptor</div>
-<div class="corner mono" id="br">brand.com</div>
-<div id="rail"><div id="railFill"></div></div>
+<!-- optional: ONE quiet brand mark in a corner. Nothing else. -->
+<div class="mono" id="mark">BRAND</div>
 ```
+
+**Do not add** a chapter / page counter (`02 / 05`), a progress bar, a timecode,
+or four corner labels. They are slide and video-player furniture: the user's
+first reaction to a film that had them was "太像 PPT 了". A film does not tell
+the viewer which scene number it is on.
 
 ```css
 #grain { position:absolute; inset:-40px; z-index:40; pointer-events:none; opacity:.14; mix-blend-mode:multiply;
@@ -55,16 +57,11 @@ unless you have a reason — they are what make each move read correctly.
 /* on a dark film use mix-blend-mode: overlay and opacity ~.11 */
 #falloff { position:absolute; inset:0; z-index:39; pointer-events:none;
   background: radial-gradient(120% 100% at 50% 45%, rgba(0,0,0,0) 60%, rgba(0,0,0,.22) 100%); }
-#rail { position:absolute; left:72px; right:72px; bottom:92px; height:2px; background:rgba(0,0,0,.12); z-index:45; }
-#railFill { position:absolute; inset:0; background:var(--accent); transform-origin:0 50%; }
+#mark { position:absolute; left:72px; top:52px; z-index:45; font-size:17px; opacity:.6; }
 ```
 
 ```js
-tl.fromTo("#railFill", { scaleX: 0 }, { scaleX: 1, duration: 15, ease: "none" }, 0);
 tl.to("#grain", { x: 26, y: -20, duration: 15, ease: "steps(45)" }, 0);   // grain that crawls, not slides
-[["02", 3.0], ["03", 6.0], ["04", 9.5], ["05", 12.5]].forEach(function (c) {
-  tl.set("#chapN", { textContent: c[0] }, c[1]);
-});
 ```
 
 ## 2. Line mask reveal

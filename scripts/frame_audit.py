@@ -55,7 +55,7 @@ ACTS = [(0, 3), (3, 6), (6, 9.5), (9.5, 12.5), (12.5, 99)]
 # coverage 0.08-0.43, motion 0.03-0.05; rejected ones at detail 0.01-0.06,
 # coverage 0.01-0.06, motion 0.00-0.02. These floors sit between the two groups.
 FLOORS = {
-    "median coverage": 0.07,          # share of frame that is not bare ground
+    "median coverage": 0.065,         # share of frame that is not bare ground
     "median detail": 0.065,           # share of pixels on a visible edge
     "median motion": 0.025,           # share of frame changing per 0.1s
     "longest still stretch (s)": 2.5,

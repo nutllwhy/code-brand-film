@@ -35,13 +35,8 @@
       #night { position: absolute; inset: 0; z-index: 38; pointer-events: none; opacity: 0;
         background: radial-gradient(110% 90% at 70% 30%, rgba(43,92,255,0.10), rgba(21,23,40,0.16)); }
 
-      /* chrome */
-      .corner { position: absolute; z-index: 45; font-size: 17px; color: #5F6370; }
-      #tl { left: 72px; top: 52px; } #tr { right: 72px; top: 52px; text-align: right; }
-      #bl { left: 72px; bottom: 48px; } #br { right: 72px; bottom: 48px; }
-      #tr b { color: #2B5CFF; font-weight: 400; }
-      #rail { position: absolute; left: 72px; right: 72px; bottom: 92px; height: 2px; background: rgba(21,23,28,0.12); z-index: 45; }
-      #railFill { position: absolute; left: 0; top: 0; height: 2px; width: 100%; background: #2B5CFF; transform-origin: 0 50%; }
+      /* one quiet brand mark — no page counter, no progress bar (those read as slides) */
+      #mark { position: absolute; z-index: 45; left: 72px; top: 52px; font-size: 17px; color: #5F6370; }
 
       /* ---------- the order (persistent input bar) ---------- */
       #bar { position: absolute; z-index: 20; left: 260px; top: 470px; width: 1400px; height: 140px; border-radius: 70px;
@@ -128,8 +123,8 @@
       .doc .hd { position: absolute; left: 32px; top: 26px; font-size: 16px; color: #5F6370; }
       .doc .tt { position: absolute; left: 32px; top: 58px; font-size: 36px; font-weight: 700; white-space: nowrap; }
       .ln { position: absolute; left: 32px; height: 10px; border-radius: 5px; background: #E9E6DF; }
-      #ppt { left: 640px; top: 360px; width: 760px; height: 428px; }
-      #ppt .band { position: absolute; left: 0; top: 0; bottom: 0; width: 14px; background: #2B5CFF; }
+      #ppt { left: 640px; top: 360px; width: 760px; height: 428px; overflow: hidden; }
+      #ppt .band { position: absolute; left: 0; top: 0; bottom: 0; width: 14px; background: #2B5CFF; border-radius: 10px 0 0 10px; }
       .bar4 { position: absolute; bottom: 58px; width: 54px; background: #2B5CFF; transform-origin: 50% 100%; border-radius: 4px 4px 0 0; }
       .bar4.s { background: #DCE6FF; }
       #pptAxis { position: absolute; left: 330px; right: 40px; bottom: 56px; height: 2px; background: #15171C; }
@@ -269,11 +264,7 @@
       <div id="night"></div>
       <div id="falloff"></div>
       <div id="grain"></div>
-      <div class="corner mono" id="tl">Acme 工作台</div>
-      <div class="corner mono" id="tr"><b id="chapN">01</b> / 05</div>
-      <div class="corner mono" id="bl">一句话派活 · 自动执行 · 交付成果</div>
-      <div class="corner mono" id="br">acme.example</div>
-      <div id="rail"><div id="railFill"></div></div>
+      <div class="mono" id="mark">Acme 工作台</div>
     </div>
 
     <script>
@@ -281,12 +272,8 @@
       var tl = gsap.timeline({ paused: true });
       var B = 0.5; // one beat = 0.5s (120 BPM); every cut lands on the grid
 
-      /* chrome */
-      tl.fromTo("#railFill", { scaleX: 0 }, { scaleX: 1, duration: 15, ease: "none" }, 0);
+      /* texture */
       tl.to("#grain", { x: 26, y: -20, duration: 15, ease: "steps(45)" }, 0);
-      [["02", 3.0], ["03", 6.0], ["04", 9.5], ["05", 12.5]].forEach(function (c) {
-        tl.set("#chapN", { textContent: c[0] }, c[1]);
-      });
 
       /* ============ S1 · 一句话 (0 – 3.0) ============ */
       tl.fromTo("#cam1", { scale: 1.04 }, { scale: 1.0, duration: 3, ease: "power2.out" }, 0);

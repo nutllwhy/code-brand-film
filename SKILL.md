@@ -74,7 +74,8 @@ Seeing how much one 15s film contains is worth more than any rule here.
 4. **Scaffold.** `film/hyperframes.json` (copy `assets/hyperframes.json`),
    `film/package.json` pinning `hyperframes@0.8.78`, `src/index.tpl.html`,
    `src/build.py` (copy `scripts/build_template.py`). Start from the example's
-   CSS chrome (grain, falloff, corners, rail) — it's ten lines and it matters.
+   texture layer (grain, falloff). Do **not** add a page counter (`02 / 05`),
+   a progress bar or corner labels — they make the film look like slides.
 5. **Fonts.** `python3 src/build.py`, then
    `scripts/fetch_cjk_fonts.sh src/chars.txt film/assets/fonts` for Chinese.
    Latin fonts: download woff2 files into `film/assets/fonts/`. Every
