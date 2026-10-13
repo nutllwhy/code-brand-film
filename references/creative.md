@@ -7,10 +7,10 @@ half that decides whether the film is deliverable.
 > `pipeline.md` and `scoring.md` built a film that linted clean, sounded fine,
 > and failed 13 of 19 checks: 36 tweens, 1.3% of the frame covered, a 4.4s
 > stretch where nothing moved, no logo, no product. Before you write code you
-> also need [assets.md](assets.md), [quality-bar.md](quality-bar.md), [shot-list.md](shot-list.md),
+> also need [layout.md](layout.md), [assets.md](assets.md), [quality-bar.md](quality-bar.md), [shot-list.md](shot-list.md),
 > [recipes.md](recipes.md) and the timeline in `examples/office-agent/`.
-> The film is done when `scripts/film_audit.py` and `scripts/frame_audit.py`
-> both print `0 failed` — not when it lints, and not when you like the sheet.
+> The film is done when `scripts/film_audit.py`, `scripts/layout_audit.mjs` and
+> `scripts/frame_audit.py` all print `0 failed` — not when it lints, and not when you like the sheet.
 
 ## Start from one sentence, not from the visuals
 

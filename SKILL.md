@@ -18,15 +18,16 @@ metadata:
 # Code-generated brand films
 
 > **Three things decide whether a film ships. Do not skip any of them.**
-> 1. Read *all eight* files in the reading table below, plus the example's
+> 1. Read *all nine* files in the reading table below, plus the example's
 >    `src/index.tpl.html`. Reading only `creative.md` / `pipeline.md` /
 >    `scoring.md` reproduces the rejected films described here.
 > 2. Search for the brand's real logo and imagery and record them in
 >    `assets.md`, then write `shot-list.md` and `copy.md` — all before the timeline.
-> 3. Run both gates and paste their output in your delivery:
+> 3. Run all three gates and paste their output in your delivery:
 >    `scripts/film_audit.py film/index.html` before rendering,
+>    `node scripts/layout_audit.mjs film/index.html` before rendering,
 >    `scripts/frame_audit.py film/renders/silent.mp4` after.
->    Both print `0 failed`, or the film is not delivered. Lint passing means
+>    All three print `0 failed`, or the film is not delivered. Lint passing means
 >    the page is valid, not that the film is good.
 
 A film is one static HTML page inside `film/`, driven by a paused GSAP timeline
@@ -45,8 +46,12 @@ accepted films it was compared against had ~105 tweens, 9–12 mechanics, 2–4
 non-crossfade transitions, and showed the product working in most acts.
 
 So this skill sets **floors you can measure** and gives you **code to copy**.
-There are two gates: `scripts/film_audit.py` on the HTML before rendering, and
-`scripts/frame_audit.py` on the rendered MP4 after. Both must print `0 failed`.
+There are three gates: `scripts/film_audit.py` on the HTML (floors),
+`scripts/layout_audit.mjs` on the HTML in a real browser (placement), and
+`scripts/frame_audit.py` on the rendered MP4 (pixels). All must print `0 failed`.
+A later film passed the first and last and was still rejected for placement:
+headline under the input bar, logo on the first character, a notification card
+parked on the corner mark. The layout gate exists for that.
 
 **The floors are minimums, not targets.** A later film cleared the code gate at
 exactly 70 tweens and 8 mechanics, padded with breathing headlines, and was still
@@ -69,6 +74,7 @@ didn't open.
 | Step | File | Why |
 | --- | --- | --- |
 | before anything | [references/creative.md](references/creative.md) | metaphor, five-act timing, motion rules, palettes, the AI-look traps |
+| before placing anything | [references/layout.md](references/layout.md) | zone map per act, hard placement rules (text never covered, logo never on text, title safe, no half-parked cards) |
 | before anything | [references/assets.md](references/assets.md) | where to search for the real logo and imagery, the five-point logo check, the `assets.md` manifest |
 | before anything | [references/quality-bar.md](references/quality-bar.md) | the numbers, the mechanic list, the transition list, product truth, real assets |
 | before coding | [references/shot-list.md](references/shot-list.md) | the table you fill in first; worked example included |
@@ -112,13 +118,16 @@ Seeing how much one 15s film contains is worth more than any rule here.
    `recipes.md`. Run `npx --yes hyperframes@0.8.78 lint` after each act.
 7. **Gate.** `python3 scripts/film_audit.py film/index.html` → must print
    `0 failed`. Fix every FAIL by adding real content, not by gaming the regex.
+   Then `node scripts/layout_audit.mjs film/index.html --shots .gates/layout`
+   → must print `0 failed`. Open the screenshots, move things per
+   `references/layout.md`, re-run.
 8. **Render silent**, then `python3 scripts/frame_audit.py film/renders/silent.mp4`
    → must print `0 failed`. Make a contact sheet and put it next to
    `examples/office-agent/reference-sheet.jpg`; answer the three comparison
    questions in `quality-bar.md`. If yours is clearly thinner, go back to step 6
    — add product on screen, not decoration. Then fix the single worst frame.
-9. **Score it — only now, after both gates pass.** `score_lib` prints a
-   NOT READY banner if `.gates/` has no pass stamps from the two audits.
+9. **Score it — only now, after all three gates pass.** `score_lib` prints a
+   NOT READY banner if `.gates/` is missing any of the three pass stamps.
    (`scripts/score_template.py` → `audio/score.py`), mix SFX,
    `loudnorm` to −14 LUFS, mux with `-c:v copy`.
 10. **Deliver** one `MEDIA:`/file line per output. State what you verified
@@ -130,6 +139,7 @@ Seeing how much one 15s film contains is worth more than any rule here.
 ```bash
 python3 src/build.py
 python3 <skill>/scripts/film_audit.py film/index.html           # code gate: must be "0 failed"
+node <skill>/scripts/layout_audit.mjs film/index.html --shots .gates/layout   # placement gate: "0 failed"
 cd film
 npx --yes hyperframes@0.8.78 lint                                # target 0 errors; read every warning
 PRODUCER_BROWSER_GPU_MODE=hardware \
@@ -172,6 +182,7 @@ python3 <skill>/scripts/frame_audit.py renders/silent.mp4        # pixel gate: m
 
 ```
 scripts/film_audit.py       code gate, before render (floors, shot list, copy and asset sources)
+scripts/layout_audit.mjs    placement gate, headless Chrome (hidden / colliding / clipped text, safe area, half-parked cards)
 scripts/frame_audit.py      pixel gate, after render (coverage, detail, motion)
 scripts/fetch_cjk_fonts.sh  Noto Serif/Sans SC subsets for exactly the characters used
 scripts/build_template.py   template → film/index.html + CJK character list

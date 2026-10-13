@@ -21,3 +21,13 @@ Grid: 0.5s (six pipeline steps, one per beat).
 
 That is 103 tweens, 12 mechanics, 4 non-crossfade transitions, 19 eases — see
 `examples/office-agent/` for the complete source.
+
+## Zone map
+
+| Act | Headline zone | Product zone | Accent / logo zone | Empty on purpose |
+| --- | --- | --- | --- | --- |
+| 1 | kicker above the bar, y 480–510 | input bar, centre band y 540–680 | corner mark top-left only | top and bottom thirds |
+| 2 | top-left, y 150–300, right of the docked bar's width | track, lower band y 620–900 | docked bar top-left, leaves before the headline lands | top-right |
+| 3 | top-left, y 140–330 | devices, lower band y 380–960 | clock top-right | none — busiest act |
+| 4 | top-left, y 120–280 | cards, centre-right y 300–960 | notification bottom-right | top-right corner |
+| 5 | centre lines, y 380–620 | — | stamp right of line 2, logo lockup bottom centre | sides |

@@ -311,7 +311,7 @@ def _check_gates(path):
         d = up
     if not root:
         return
-    missing = [n for n in ('film_audit', 'frame_audit')
+    missing = [n for n in ('film_audit', 'layout_audit', 'frame_audit')
                if not os.path.exists(os.path.join(root, '.gates', n + '.ok'))]
     if missing:
         import sys
@@ -320,8 +320,9 @@ def _check_gates(path):
 {bar}
   NOT READY TO SCORE — the picture has not passed: {', '.join(missing)}
   run  python3 <skill>/scripts/film_audit.py  film/index.html
+  and  node <skill>/scripts/layout_audit.mjs film/index.html
   and  python3 <skill>/scripts/frame_audit.py film/renders/silent.mp4
-  Both must print "0 failed". A film that fails them is not deliverable,
+  All must print "0 failed". A film that fails them is not deliverable,
   however good the music is. Go back to the timeline, not to the mix.
 {bar}
 

@@ -258,6 +258,21 @@ def main() -> int:
     check('shot-list.md filled', f'{sl_rows} rows' if sl else 'missing', '>= 6 table rows', sl_rows >= 6,
           'write it BEFORE the timeline — references/shot-list.md' if not sl else '')
 
+    zm = 0
+    if sl:
+        t = open(sl, encoding='utf-8').read()
+        i = t.lower().find('headline zone')
+        if i >= 0:
+            for l in t[i:].splitlines()[1:]:
+                if not l.startswith('|'):
+                    if zm: break
+                    continue
+                cells = [c.strip() for c in l.strip().strip('|').split('|')]
+                if set(''.join(cells)) <= set('-: '): continue
+                if len(cells) >= 4 and all(cells[1:4]): zm += 1
+    check('zone map per act in shot-list.md', f'{zm} acts', '>= 5', zm >= 5,
+          'plan headline / product / logo zones per act first — references/layout.md' if zm < 5 else '')
+
     cp = find('copy.md')
     body = re.sub(r'<(script|style)[^>]*>.*?</\1>', ' ', html, flags=re.S)
     body = re.sub(r'<!--.*?-->', ' ', body, flags=re.S)

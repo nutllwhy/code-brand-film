@@ -62,6 +62,10 @@ So there is now a second gate that cannot be padded, because it measures pixels.
 
 ## The rendered-frame gate
 
+Placement is checked separately by `node scripts/layout_audit.mjs film/index.html`
+(text hidden under boxes, text on text, clipped text, 48 px title safe, cards
+parked half off-frame) — rules in [layout.md](layout.md).
+
 Run `scripts/frame_audit.py renders/silent.mp4` after the first render. It
 samples 10 frames a second and measures:
 

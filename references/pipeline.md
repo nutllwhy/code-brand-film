@@ -1,10 +1,10 @@
 # Engineering pipeline
 
 > **Not the first file to read.** Start with `SKILL.md`, `creative.md`,
-> `assets.md`, `quality-bar.md`, `shot-list.md`, `recipes.md` and `examples/office-agent/`.
+> `layout.md`, `assets.md`, `quality-bar.md`, `shot-list.md`, `recipes.md` and `examples/office-agent/`.
 > Nothing in this file makes a film good; it only keeps a good one from breaking.
-> The film is done when `scripts/film_audit.py` and `scripts/frame_audit.py`
-> both print `0 failed`.
+> The film is done when `scripts/film_audit.py`, `scripts/layout_audit.mjs` and
+> `scripts/frame_audit.py` all print `0 failed`.
 
 The film is a single static HTML page driven by a paused GSAP timeline that the
 renderer seeks frame by frame. Nothing is captured live, so anything that depends

@@ -88,3 +88,13 @@ That is 97 non-filler tweens, 12 mechanics, 4 non-crossfade transitions, 19 ease
 - [ ] `assets.md` lists the current logo for this exact product (five-point check
       answered) and ≥ 2 official images with source URLs, and the shot list says
       which act uses each one.
+
+## Zone map (one row per act, before any CSS — see layout.md)
+
+| Act | Headline zone | Product zone | Accent / logo zone | Empty on purpose |
+| --- | --- | --- | --- | --- |
+| 1 | | | | |
+| 2 | | | | |
+| 3 | | | | |
+| 4 | | | | |
+| 5 | | | | |
