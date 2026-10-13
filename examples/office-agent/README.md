@@ -1,7 +1,7 @@
 # Example: office-automation agent, 15s, light palette
 
 A complete, renderable film built with this skill — the reference for what
-"enough" looks like. `film_audit.py` on it: 103 tweens, 12 entrance mechanics,
+"enough" looks like. `film_audit.py` on it: 97 non-filler tweens, 12 entrance mechanics,
 4 non-crossfade transitions, 19 eases, every act ≥ 7 timed events.
 
 The brand is a placeholder ("Acme 工作台", `assets/logo.svg`). The structure,
@@ -9,6 +9,9 @@ motion and score are the real thing. Read it alongside
 `references/shot-list.md` (the worked example there is this film).
 
 ```
+shot-list.md         filled in before any code
+copy.md              every on-screen line and its source (film_audit.py checks it)
+reference-sheet.jpg  2 fps contact sheet — compare yours against it
 src/index.tpl.html   the film — edit this (≈400 lines: CSS, markup, one timeline)
 src/build.py         fills __NODES__ / __CELLS__ / __TYPED__, writes film/index.html + src/chars.txt
 film/                what the renderer reads; assets/fonts are Noto Serif/Sans SC subsets (SIL OFL)
@@ -21,9 +24,10 @@ Run it:
 cd examples/office-agent
 python3 src/build.py                                              # template → film/index.html
 ../../scripts/fetch_cjk_fonts.sh src/chars.txt film/assets/fonts   # only after changing Chinese copy
-python3 ../../scripts/film_audit.py film/index.html                # the quality gate
+python3 ../../scripts/film_audit.py film/index.html                # code gate
 cd film && npx --yes hyperframes@0.8.78 lint
 PRODUCER_BROWSER_GPU_MODE=hardware npx --yes hyperframes@0.8.78 render . -q high --fps 30 -o ./renders/silent.mp4
+python3 ../../scripts/frame_audit.py renders/silent.mp4              # pixel gate
 cd .. && python3 -m venv .venv && .venv/bin/pip install numpy && .venv/bin/python audio/score.py
 ffmpeg -y -i film/renders/silent.mp4 -i audio/score.wav -map 0:v -map 1:a -c:v copy -c:a aac -b:a 320k -shortest film/renders/film.mp4
 ```

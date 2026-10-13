@@ -82,5 +82,5 @@ Grid: 0.5s (six pipeline steps, one per beat).
 | 4 Delivered | 9.5–12.5 | report, deck and sheet arrive; a "sent" notification | settle 0.88→1.0, slow push | **collapse to point** | headline · 3 × 3D card fly-in · 6 chart bars grow · 18 cells fade · notification pop |
 | 5 Sign-off | 12.5–15 | — | none, then a final slow push | — | line 1 · line 2 with gap · **stamp slam** · ink spread · 3-step shake · rule draw · logo lockup · CTA |
 
-That is 103 tweens, 12 mechanics, 4 non-crossfade transitions, 19 eases — see
+That is 97 non-filler tweens, 12 mechanics, 4 non-crossfade transitions, 19 eases — see
 `examples/office-agent/` for the complete source.

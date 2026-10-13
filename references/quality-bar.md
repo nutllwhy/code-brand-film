@@ -25,7 +25,7 @@ Measured with `scripts/film_audit.py` on the three real films:
 
 | Measure | Rejected | Accepted A | Accepted B | **Floor** |
 | --- | --- | --- | --- | --- |
-| Tweens in the timeline (`tl.to/from/fromTo/set`, loops expanded) | 18 | 106 | 103 | **≥ 70** |
+| Tweens in the timeline (loops expanded; grain/rail/chapter tweens and yoyo breathing beyond 3 excluded) | 18 | 102 | 97 | **≥ 90** |
 | Distinct entrance mechanics (see list below) | 1 | 9 | 12 | **≥ 8** |
 | Non-crossfade act transitions | 0 | 2 | 4 | **≥ 2; plain crossfades ≤ 1** |
 | Distinct eases | 6 | 17 | 19 | **≥ 8** |
@@ -38,8 +38,56 @@ Measured with `scripts/film_audit.py` on the three real films:
 | Copy lines traceable to the brief / product page | 0 | all | all | **all** (shot list) |
 | A persistent element that crosses an act boundary | no | the logo hole | the input bar | **≥ 1** (shot list) |
 
-The last three rows cannot be detected from code — they are what the shot list
-is for.
+The last three rows are checked through two files that `film_audit.py` requires
+next to `film/`: `shot-list.md` (filled in before any HTML) and `copy.md` (every
+on-screen line with its source — the audit fails on any visible text missing from
+it). See `examples/office-agent/` for both.
+
+## Floors are not targets — the second failure
+
+After the floors above were published, another agent built a film that cleared
+every one of them *exactly*: 70 tweens, 8 mechanics. It still looked thin. How:
+
+- Its count included the progress rail, the grain, the chapter number, and seven
+  yoyo "breathing" tweens on headlines and shapes. Those are now excluded from
+  the count (yoyos beyond the first three) — it scores 59.
+- The idea was abstract (a drop of ink → lines → a box → the logo). Not one frame
+  showed the product doing anything; it could have been an ad for a pen.
+- The frame was nearly empty: content covered **3%** of the frame on median. A
+  short line of type and one small shape, on a flat ground, for fifteen seconds.
+- It skipped the shot list entirely, and its tagline was invented.
+
+So there is now a second gate that cannot be padded, because it measures pixels.
+
+## The rendered-frame gate
+
+Run `scripts/frame_audit.py renders/silent.mp4` after the first render. It
+samples 10 frames a second and measures:
+
+| Measure | Rejected films | Accepted films | **Floor** |
+| --- | --- | --- | --- |
+| Median coverage (share of frame that is not bare ground) | 0.007 – 0.056 | 0.08 – 0.43 | **≥ 0.07** |
+| Median detail (share of pixels on a visible edge) | 0.008 – 0.063 | 0.069 – 0.10 | **≥ 0.065** |
+| Median motion (share of frame changing per 0.1 s) | 0.000 – 0.020 | 0.03 – 0.05 | **≥ 0.025** |
+| Thinnest act (median coverage of the emptiest act) | 0.000 – 0.019 | 0.05 – 0.09 | **≥ 0.04** |
+| Longest near-still stretch | up to 6.2 s | ≤ 2.1 s | **≤ 2.5 s** |
+
+If it fails, the fix is never "make the text bigger". It is: put the product on
+screen (an interface, a document, a device, real data), add the background and
+foreground depth layers, keep a persistent object alive across the cut.
+
+## Compare with the reference before delivering
+
+`examples/office-agent/reference-sheet.jpg` is the reference film's contact sheet
+(2 fps, 30 frames). Make yours the same way
+(`ffmpeg -i silent.mp4 -vf "fps=2,scale=384:-1,tile=6x5:padding=4:color=white" -frames:v 1 sheet.jpg`)
+and look at the two side by side. Answer in writing, in the delivery notes:
+
+1. In how many of my 30 frames can you tell what the product does? In how many of the reference's? (the reference shows it in roughly half; the hook and sign-off are allowed to be sparse)
+2. How many of my frames are mostly empty ground, outside the sign-off?
+3. Which of my acts is thinnest, and what would the reference put there?
+
+If your answers are clearly worse than the reference, you are not done.
 
 `index.html` size is a symptom, not a target, but a 15s film under ~20 KB is
 almost certainly under-built.

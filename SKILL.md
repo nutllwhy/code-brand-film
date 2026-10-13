@@ -33,8 +33,15 @@ accepted films it was compared against had ~105 tweens, 9–12 mechanics, 2–4
 non-crossfade transitions, and showed the product working in most acts.
 
 So this skill sets **floors you can measure** and gives you **code to copy**.
-Before every render, `scripts/film_audit.py` must pass. If it fails, keep
-building — do not render and do not deliver.
+There are two gates: `scripts/film_audit.py` on the HTML before rendering, and
+`scripts/frame_audit.py` on the rendered MP4 after. Both must print `0 failed`.
+
+**The floors are minimums, not targets.** A later film cleared the code gate at
+exactly 70 tweens and 8 mechanics, padded with breathing headlines, and was still
+an abstract ink-drop animation covering 3% of the frame with no product in it.
+The tween count now excludes filler, and the pixel gate exists because pixels
+cannot be padded. If you find yourself adding tweens to pass a number, stop: the
+film is missing content, not motion. Aim at the reference example, not the floor.
 
 ## Read these — in this order
 
@@ -58,7 +65,9 @@ Seeing how much one 15s film contains is worth more than any rule here.
    **real logo** and any official imagery. Never redraw a logo as a shape.
 2. **Find the metaphor** — one sentence with a physical verb, ideally taken
    from the brand's own asset or the selling line's own words (`creative.md`).
-3. **Write `shot-list.md`** in the film project using the template. Every act:
+3. **Write `shot-list.md` and `copy.md`** in the film project (next to `film/`;
+   the audit fails without them). `copy.md` lists every on-screen line with its
+   source; see `examples/office-agent/copy.md`. Shot list from the template. Every act:
    ≥ 5 timed events, a named camera move, a named exit transition, three depth
    layers, a product behaviour (except hook/lockup), and a source for each line
    of copy. Run the self-check at its bottom. If the user is around, show it.
@@ -74,32 +83,40 @@ Seeing how much one 15s film contains is worth more than any rule here.
    `recipes.md`. Run `npx --yes hyperframes@0.8.78 lint` after each act.
 7. **Gate.** `python3 scripts/film_audit.py film/index.html` → must print
    `0 failed`. Fix every FAIL by adding real content, not by gaming the regex.
-8. **Render silent**, sheet it with `scripts/review_frames.sh`, look at the sheet
-   with an image-capable model, fix the single worst thing. ≤ 2 rounds.
+8. **Render silent**, then `python3 scripts/frame_audit.py film/renders/silent.mp4`
+   → must print `0 failed`. Make a contact sheet and put it next to
+   `examples/office-agent/reference-sheet.jpg`; answer the three comparison
+   questions in `quality-bar.md`. If yours is clearly thinner, go back to step 6
+   — add product on screen, not decoration. Then fix the single worst frame.
 9. **Score it** (`scripts/score_template.py` → `audio/score.py`), mix SFX,
    `loudnorm` to −14 LUFS, mux with `-c:v copy`.
 10. **Deliver** one `MEDIA:`/file line per output. State what you verified
-    (audit numbers, lint, loudness, frames) and what only the user can judge
+    (both audits' numbers, lint, loudness, the reference comparison) and what only the user can judge
     (taste, how the music sounds). Flag any invented copy and any low-res logo.
 
 ## Commands
 
 ```bash
 python3 src/build.py
-python3 <skill>/scripts/film_audit.py film/index.html           # gate: must be "0 failed"
+python3 <skill>/scripts/film_audit.py film/index.html           # code gate: must be "0 failed"
 cd film
 npx --yes hyperframes@0.8.78 lint                                # target 0 errors; read every warning
 PRODUCER_BROWSER_GPU_MODE=hardware \
   npx --yes hyperframes@0.8.78 render . -q high --fps 30 -o ./renders/silent.mp4
+python3 <skill>/scripts/frame_audit.py renders/silent.mp4        # pixel gate: must be "0 failed"
 <skill>/scripts/review_frames.sh renders/silent.mp4 snapshots 2 "11.0,13.5"
 ```
 
 ## Hard rules (each one came from a rejected or broken film)
 
-- **Floors are floors.** ≥ 70 tweens, ≥ 8 mechanics, ≥ 2 non-crossfade
+- **Floors are floors, not targets.** ≥ 90 non-filler tweens, ≥ 8 mechanics, ≥ 2 non-crossfade
   transitions, ≥ 8 eases, ≥ 8 camera moves, ≥ 5 events in every act (15s film).
-- **Show the product working** in at least two acts. A metaphor with nothing
-  underneath could be an ad for anything.
+- **Show the product working** in at least two acts — its interface, its
+  output, a device running it, real-looking data. An abstract metaphor (ink,
+  particles, light, a seed growing) with no product in it could be an ad for
+  anything and is rejected even if every number passes.
+- **Fill the frame.** A line of text and one small shape on a flat ground is an
+  empty frame. Every act needs background, midground and foreground layers.
 - **Copy comes from the source.** Every on-screen line traces to the brief or the
   product page; anything invented is flagged to the user.
 - **Real logo, real fonts.** The brand's file, embedded woff2 subsets.
@@ -119,12 +136,14 @@ PRODUCER_BROWSER_GPU_MODE=hardware \
 ## Bundled resources
 
 ```
-scripts/film_audit.py       static quality gate (the floors in quality-bar.md)
+scripts/film_audit.py       code gate, before render (floors, shot list, copy sources)
+scripts/frame_audit.py      pixel gate, after render (coverage, detail, motion)
 scripts/fetch_cjk_fonts.sh  Noto Serif/Sans SC subsets for exactly the characters used
 scripts/build_template.py   template → film/index.html + CJK character list
 scripts/review_frames.sh    render → contact sheet + stills + duration check
 scripts/score_lib.py        instrument library + reverb + master (import, don't edit)
 scripts/score_template.py   five-act arrangement to copy and fill in
 assets/hyperframes.json     project config
-examples/office-agent/      complete reference film (placeholder brand)
+examples/office-agent/      complete reference film (placeholder brand), with its
+                            shot-list.md, copy.md and reference-sheet.jpg
 ```

@@ -118,14 +118,26 @@ def main() -> int:
             fails.append(name)
 
     # ---- volume
-    tweens, guessed_loops = 0, False
+    # filler does not count: grain / rail / chapter-number tweens, and any yoyo "breathing"
+    # beyond the first three (a headline that bobs is not an event)
+    tweens, guessed_loops, filler, yoyos = 0, False, 0, 0
     for m in TWEEN_RE.finditer(js):
+        stmt = js[m.start():js.find(';', m.start()) + 1]
+        if re.search(r'["\']#(?:grain|rail\w*|chap\w*|progress\w*)["\']', stmt[:60]):
+            filler += 1
+            continue
+        if 'yoyo' in stmt:
+            yoyos += 1
+            if yoyos > 3:
+                filler += 1
+                continue
         mult, g = loop_multiplier(js, m.start())
         tweens += mult
         guessed_loops |= g
-    floor_tw = round(70 * k)
-    check('tweens (loops expanded)', tweens, f'>= {floor_tw}', tweens >= floor_tw,
-          'loop count estimated' if guessed_loops else '')
+    floor_tw = round(90 * k)
+    check('tweens (loops expanded, filler excluded)', tweens, f'>= {floor_tw}', tweens >= floor_tw,
+          '; '.join(x for x in ['loop count estimated' if guessed_loops else '',
+                                f'{filler} filler not counted' if filler else ''] if x))
 
     # ---- variety
     eases = sorted(set(EASE_RE.findall(js)))
@@ -191,6 +203,33 @@ def main() -> int:
           ('missing: ' + ', '.join(missing_imgs)) if missing_imgs else '')
     if missing_imgs:
         fails.append('missing image files')
+
+    # ---- process artefacts: the shot list and the copy sheet must exist next to film/
+    proj = os.path.dirname(root)
+    def find(name):
+        for d in (proj, root):
+            p = os.path.join(d, name)
+            if os.path.exists(p):
+                return p
+    sl = find('shot-list.md')
+    sl_rows = len([l for l in open(sl, encoding='utf-8') if l.startswith('|') and not set(l.strip()) <= set('|-: ')]) if sl else 0
+    check('shot-list.md filled', f'{sl_rows} rows' if sl else 'missing', '>= 6 table rows', sl_rows >= 6,
+          'write it BEFORE the timeline — references/shot-list.md' if not sl else '')
+
+    cp = find('copy.md')
+    body = re.sub(r'<(script|style)[^>]*>.*?</\1>', ' ', html, flags=re.S)
+    body = re.sub(r'<!--.*?-->', ' ', body, flags=re.S)
+    texts = [re.sub(r'\s+', ' ', t).strip() for t in re.findall(r'>([^<>]+)<', body)]
+    texts = [t for t in texts if len(re.findall(r'[\u4e00-\u9fff]', t)) >= 2 or len(re.findall(r'[A-Za-z]', t)) >= 6]
+    if cp:
+        src = re.sub(r'\s+', '', open(cp, encoding='utf-8').read())
+        norm = lambda t: re.sub(r'[\s·・，。,.!！?？:：、|｜—\-]+', '', t)
+        unsourced = [t for t in texts if norm(t) and norm(t) not in re.sub(r'[\s·・，。,.!！?？:：、|｜—\-]+', '', src)]
+        check('on-screen copy listed in copy.md', f'{len(texts) - len(unsourced)}/{len(texts)}', 'all', not unsourced,
+              ('not in copy.md: ' + ' / '.join(unsourced[:6])) if unsourced else '')
+    else:
+        check('on-screen copy listed in copy.md', 'missing', 'all', False,
+              'copy.md: every on-screen line + where it came from (brief / product page / invented-flagged)')
 
     # ---- known foot-guns
     if re.search(r'stroke-dasharray\s*:', css):
