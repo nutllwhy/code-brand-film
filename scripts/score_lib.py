@@ -297,8 +297,9 @@ class Score:
 
 
 def _check_gates(path):
-    """Scoring is the last step. If the picture has not passed both audits,
-    say so loudly: music on an under-built film is wasted work."""
+    """Scoring is the last step. If the picture has not passed all three audits,
+    stop: no score is written, so there is nothing to mux. Music on an
+    under-built film is wasted work."""
     d = os.path.dirname(path)
     root = None
     while True:
@@ -324,6 +325,8 @@ def _check_gates(path):
   and  python3 <skill>/scripts/frame_audit.py film/renders/silent.mp4
   All must print "0 failed". A film that fails them is not deliverable,
   however good the music is. Go back to the timeline, not to the mix.
+  score.wav was NOT written.
 {bar}
 
 """)
+        raise SystemExit(1)

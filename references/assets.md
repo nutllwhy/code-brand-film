@@ -65,6 +65,14 @@ Use them as material, not as slides:
 - a screenshot as the reference you rebuild in HTML — the rebuilt UI must match
   the real one's layout, colours and labels; cite the screenshot in `assets.md`
 
+**Physical products** (cameras, phones, headphones, drinks): the product appears
+as its official photo or render, cut out on transparent ground, every time it is
+on screen. A glowing outline or a CSS rectangle "standing for" the device is a
+rejected film — one was delivered with the camera drawn as a rounded rectangle
+and the maker's name typed in a font instead of its logo. Official product
+pages always carry these images; look in the page's `<img>` / `srcset` /
+`og:image` and the press or media centre.
+
 If you truly find nothing beyond the logo (a brand with no site, a product not
 launched yet), write `imagery: none found` in `assets.md` followed by every
 search you ran and every URL you checked. The audit accepts that line; the user
