@@ -84,3 +84,7 @@ Grid: 0.5s (six pipeline steps, one per beat).
 
 That is 97 non-filler tweens, 12 mechanics, 4 non-crossfade transitions, 19 eases — see
 `examples/office-agent/` for the complete source.
+
+- [ ] `assets.md` lists the current logo for this exact product (five-point check
+      answered) and ≥ 2 official images with source URLs, and the shot list says
+      which act uses each one.

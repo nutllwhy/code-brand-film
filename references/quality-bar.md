@@ -33,7 +33,8 @@ Measured with `scripts/film_audit.py` on the three real films:
 | Timed events per act (0–3 / 3–6 / 6–9.5 / 9.5–12.5 / 12.5–15) | 3/0/5/5/4 | 21/11/12/12/6 | 17/7/21/11/11 | **≥ 5 every act** |
 | Page counter / progress bar / corner labels | — | — | — | **none** (reads as PPT) |
 | Fonts as embedded files | 0 (system `local()`) | 2 | 4 | **every face on screen** |
-| Real brand logo | — | inline official SVG path | official icon file | **the real file** |
+| Real brand logo | — | inline official SVG path | official icon file | **the real, current file, checked** (`assets.md`) |
+| Official images besides the logo | 0 | 3 | 0 (a gap, not a model) | **≥ 2**, one showing the product |
 | Acts that depict the product actually working | 0 | 2 | 4 | **≥ 2** (shot list) |
 | Copy lines traceable to the brief / product page | 0 | all | all | **all** (shot list) |
 | A persistent element that crosses an act boundary | no | the logo hole | the input bar | **≥ 1** (shot list) |
@@ -161,9 +162,11 @@ silently.
 
 ## Real assets, real fonts
 
-- Use the brand's actual logo file (SVG preferred; a raster favicon at small
-  size if that is all there is — and say so in the delivery). Never redraw a logo
-  as a primitive shape.
+- Use the brand's current logo file for this exact product (SVG preferred; a
+  raster favicon only at small size, flagged in delivery). Never redraw a logo,
+  never take one from a logo-aggregator site. Bring back ≥ 2 official images as
+  well. The search order, the five-point logo check and the `assets.md` manifest
+  are in [assets.md](assets.md); `film_audit.py` fails without the manifest.
 - Every face on screen must be a local `woff2` loaded via `@font-face` with a
   `url()`. `local()` and system font names are not allowed — the headless render
   browser does not have them and falls back silently. Use

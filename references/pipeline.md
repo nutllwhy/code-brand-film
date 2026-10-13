@@ -1,7 +1,7 @@
 # Engineering pipeline
 
 > **Not the first file to read.** Start with `SKILL.md`, `creative.md`,
-> `quality-bar.md`, `shot-list.md`, `recipes.md` and `examples/office-agent/`.
+> `assets.md`, `quality-bar.md`, `shot-list.md`, `recipes.md` and `examples/office-agent/`.
 > Nothing in this file makes a film good; it only keeps a good one from breaking.
 > The film is done when `scripts/film_audit.py` and `scripts/frame_audit.py`
 > both print `0 failed`.
@@ -23,6 +23,9 @@ sooner or later. Everything the film needs must be a local file.
 │   ├── assets/<brand assets>
 │   ├── renders/            ← output mp4s
 │   └── snapshots/          ← frame dumps for review
+├── assets.md              ← every image file + source URL + logo check
+├── shot-list.md
+├── copy.md
 ├── src/
 │   ├── index.tpl.html      ← the source of truth you edit
 │   ├── build.py            ← tpl → film/index.html + CJK subset list

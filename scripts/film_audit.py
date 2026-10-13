@@ -208,6 +208,44 @@ def main() -> int:
     if missing_imgs:
         fails.append('missing image files')
 
+    # ---- asset provenance: assets.md next to film/ (references/assets.md)
+    proj_ = os.path.dirname(root)
+    am = next((os.path.join(d, 'assets.md') for d in (proj_, root)
+               if os.path.exists(os.path.join(d, 'assets.md'))), None)
+    local_imgs = sorted(set(s for s in imgs if not s.startswith(('http', 'data:'))
+                            and not re.search(r'fonts?/', s)))
+    others = [s for s in local_imgs if s not in logo_files]
+    if am:
+        A = open(am, encoding='utf-8').read()
+        trows = [l for l in A.splitlines() if l.strip().startswith('|')]
+        def sourced(f):
+            name = os.path.basename(f)
+            return any(name in l and (re.search(r'https?://', l) or 'provided by user' in l.lower()) for l in trows)
+        unsourced = [f for f in local_imgs if not sourced(f)]
+        check('every image file has a source URL in assets.md', f'{len(local_imgs) - len(unsourced)}/{len(local_imgs)}',
+              'all', not unsourced, ('no source: ' + ', '.join(unsourced[:5])) if unsourced else '')
+        need = ['right product', 'current version', 'variant', 'untouched', 'resolution']
+        low = A.lower()
+        miss = [k for k in need if k not in low]
+        check('logo check answered in assets.md', f'{5 - len(miss)}/5', '5/5', not miss,
+              ('missing: ' + ', '.join(miss)) if miss else '')
+        none_found = 'imagery: none found' in low
+        check('official images besides the logo', len(others), '>= 2', len(others) >= 2 or none_found,
+              'accepted: "imagery: none found" + searches listed' if none_found and len(others) < 2
+              else ('search the press kit, site og:image, app store screenshots — references/assets.md' if len(others) < 2 else ''))
+    else:
+        check('assets.md (sources + logo check)', 'missing', 'present', False,
+              'search for the real logo and imagery first — references/assets.md')
+    for f in sorted(set(logo_files)):
+        p = os.path.join(root, f)
+        if f.lower().endswith('.png') and os.path.exists(p):
+            with open(p, 'rb') as fh:
+                head = fh.read(24)
+            if head[:8] == b'\x89PNG\r\n\x1a\n':
+                wpx = int.from_bytes(head[16:20], 'big')
+                if wpx < 512:
+                    warns.append(f'{f} is a {wpx}px raster logo — show it small and ask for the vector file')
+
     # ---- process artefacts: the shot list and the copy sheet must exist next to film/
     proj = os.path.dirname(root)
     def find(name):

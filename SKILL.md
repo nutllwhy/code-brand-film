@@ -18,10 +18,11 @@ metadata:
 # Code-generated brand films
 
 > **Three things decide whether a film ships. Do not skip any of them.**
-> 1. Read *all seven* files in the reading table below, plus the example's
+> 1. Read *all eight* files in the reading table below, plus the example's
 >    `src/index.tpl.html`. Reading only `creative.md` / `pipeline.md` /
 >    `scoring.md` reproduces the rejected films described here.
-> 2. Write `shot-list.md` and `copy.md` before the timeline.
+> 2. Search for the brand's real logo and imagery and record them in
+>    `assets.md`, then write `shot-list.md` and `copy.md` — all before the timeline.
 > 3. Run both gates and paste their output in your delivery:
 >    `scripts/film_audit.py film/index.html` before rendering,
 >    `scripts/frame_audit.py film/renders/silent.mp4` after.
@@ -68,6 +69,7 @@ didn't open.
 | Step | File | Why |
 | --- | --- | --- |
 | before anything | [references/creative.md](references/creative.md) | metaphor, five-act timing, motion rules, palettes, the AI-look traps |
+| before anything | [references/assets.md](references/assets.md) | where to search for the real logo and imagery, the five-point logo check, the `assets.md` manifest |
 | before anything | [references/quality-bar.md](references/quality-bar.md) | the numbers, the mechanic list, the transition list, product truth, real assets |
 | before coding | [references/shot-list.md](references/shot-list.md) | the table you fill in first; worked example included |
 | while coding | [references/recipes.md](references/recipes.md) | copyable GSAP for all 19 mechanics and transitions |
@@ -81,8 +83,14 @@ Seeing how much one 15s film contains is worth more than any rule here.
 ## Workflow
 
 1. **Collect sources.** Brief or product page: the mandatory selling line, 3–5
-   concrete product behaviours, required copy and CTA, red lines. Download the
-   **real logo** and any official imagery. Never redraw a logo as a shape.
+   concrete product behaviours, required copy and CTA, red lines.
+   **Then go searching** (`references/assets.md`): user-supplied files → press /
+   brand kit → official site (header SVG, og:image, screenshots) → app store
+   listing → official social posts. Bring back the current logo and ≥ 2 official
+   images, at least one showing the real product. Run the five-point logo check
+   (right product, current version, right variant, untouched, resolution) and
+   write it all into `assets.md` with source URLs. Never redraw a logo, never
+   take one from a logo-aggregator site.
 2. **Find the metaphor** — one sentence with a physical verb, ideally taken
    from the brand's own asset or the selling line's own words (`creative.md`).
 3. **Write `shot-list.md` and `copy.md`** in the film project (next to `film/`;
@@ -142,7 +150,11 @@ python3 <skill>/scripts/frame_audit.py renders/silent.mp4        # pixel gate: m
   empty frame. Every act needs background, midground and foreground layers.
 - **Copy comes from the source.** Every on-screen line traces to the brief or the
   product page; anything invented is flagged to the user.
-- **Real logo, real fonts.** The brand's file, embedded woff2 subsets.
+- **Real logo, real imagery, real fonts.** The brand's current logo file for this
+  exact product, checked against the live site and app store; ≥ 2 official images
+  used as material (screens, masks, key visuals); every file sourced in
+  `assets.md`; embedded woff2 subsets. A logo "inspired by" the brand, or the
+  parent app's favicon standing in for a sub-product, is a wrong logo.
 - **No template look.** No beige/orange-pink lifestyle palettes, no centring
   everything, no equal-length acts doing the same thing. The accent colour is a
   highlight, not a ground.
@@ -159,7 +171,7 @@ python3 <skill>/scripts/frame_audit.py renders/silent.mp4        # pixel gate: m
 ## Bundled resources
 
 ```
-scripts/film_audit.py       code gate, before render (floors, shot list, copy sources)
+scripts/film_audit.py       code gate, before render (floors, shot list, copy and asset sources)
 scripts/frame_audit.py      pixel gate, after render (coverage, detail, motion)
 scripts/fetch_cjk_fonts.sh  Noto Serif/Sans SC subsets for exactly the characters used
 scripts/build_template.py   template → film/index.html + CJK character list
