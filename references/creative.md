@@ -3,6 +3,15 @@
 Read this before writing any HTML. The engineering is the easy half; this is the
 half that decides whether the film is deliverable.
 
+> **This file is not the whole method.** An agent that read only this file,
+> `pipeline.md` and `scoring.md` built a film that linted clean, sounded fine,
+> and failed 13 of 19 checks: 36 tweens, 1.3% of the frame covered, a 4.4s
+> stretch where nothing moved, no logo, no product. Before you write code you
+> also need [quality-bar.md](quality-bar.md), [shot-list.md](shot-list.md),
+> [recipes.md](recipes.md) and the timeline in `examples/office-agent/`.
+> The film is done when `scripts/film_audit.py` and `scripts/frame_audit.py`
+> both print `0 failed` — not when it lints, and not when you like the sheet.
+
 ## Start from one sentence, not from the visuals
 
 A brand film fails when it starts as "a nice-looking animation". It works when
@@ -23,6 +32,23 @@ features", you don't have a film yet.
 Look for the metaphor in the brand's own assets first. Film A's idea only exists
 because the logo has a hole in it. Real assets are better raw material than
 invented ones because they carry the brand for free.
+
+**The metaphor is the frame, the product is the picture.** The physical verb
+decides the camera and the transitions; acts 2–4 are filled with the product's
+own interface doing its own work. Film A's lens has memory cards and real
+imagery inside it. Film B's stamp lands on deliverables that were built on
+screen. A verb is not enough by itself:
+
+| Metaphor | Why it failed / worked |
+| --- | --- |
+| "Your sentence is a stone thrown into a lake; the ripples grow the whole work system." | Rejected. Ripples and six glowing icons on a dark void. The verb is fine; nothing the product actually produces is ever on screen, so it is an ad for anything. |
+| "A drop of ink becomes lines, becomes shapes, becomes a flower." | Rejected. Same failure: pure abstraction, 3% of the frame lit. |
+| "Dive through the logo's hole." | Accepted. Through the lens you see the product's memory cards and the brand's own imagery. |
+| "The work goes on while the lid is shut; you just stamp it." | Accepted. Each act shows a real step: typed instruction, pipeline, synced devices, finished files. |
+
+Test it: describe act 3 to someone without saying the metaphor. If what is left
+is "shapes move", rewrite it until it is "the spreadsheet fills itself while the
+laptop is closed".
 
 ## The five-act skeleton, and its timing
 
@@ -89,8 +115,22 @@ These come from real client rejections of this exact kind of work:
 - A film with no music, or with music that ignores the cuts.
 - Text that is never the point. If an act has no words, that is fine; if every
   act has three lines of words, it's a slideshow.
+- An abstract metaphor carrying the whole film (ripples, ink, particles, light,
+  orbs, a seed growing) with no product interface inside it.
+- A dark film that is mostly void. Deep indigo/purple ground with dim, thin,
+  low-contrast elements on it reads as "nothing is there" on a phone. On a dark
+  ground the content must be lit: paper-white cards, bright text, the accent
+  glowing — and it must occupy the frame. If the contact sheet looks like a
+  black page with dust on it, the film is under-built, not moody.
+- Copy at body size. Headlines in a 1080p film are 72–120px; a 30px line at the
+  top of the frame is a caption nobody reads.
 
 ## The review loop that catches the rest
+
+This loop is for **polish**, and it only starts after both audits print
+`0 failed`. If either gate fails, the film is not a polish problem — it is
+missing content, and fixing "the single worst frame" will not save it. Go back
+to the shot list and the timeline.
 
 You cannot judge a film by reading its code. Render it, then look at it:
 

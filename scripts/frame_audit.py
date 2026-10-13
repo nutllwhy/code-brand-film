@@ -12,7 +12,7 @@ instead, which cannot be padded:
 
 usage: frame_audit.py film.mp4 [--fps 10]
 """
-import subprocess, sys, statistics, argparse
+import subprocess, sys, statistics, argparse, os
 
 W, H = 192, 108
 
@@ -103,8 +103,38 @@ def main():
     if failed:
         print(f"\n  {len(failed)} failed: {', '.join(failed)}")
         print("  the frame is too empty or too still — add product on screen, depth layers, persistent objects; do not deliver")
+        _stamp(a.video, 'frame_audit', False, '')
         sys.exit(1)
+    _stamp(a.video, 'frame_audit', True, '0 failed')
     print("\n  0 failed")
+
+
+def _project_root(p):
+    """Nearest ancestor that contains a film/ directory (the film project)."""
+    d = os.path.abspath(p if os.path.isdir(p) else os.path.dirname(p))
+    while True:
+        if os.path.isdir(os.path.join(d, 'film')):
+            return d
+        up = os.path.dirname(d)
+        if up == d:
+            return None
+        d = up
+
+
+def _stamp(path, name, ok, summary):
+    """Leave <project>/.gates/<name>.ok on pass, remove it on fail.
+    score_lib checks for both stamps before it writes the score."""
+    root = _project_root(path)
+    if not root:
+        return
+    g = os.path.join(root, '.gates')
+    os.makedirs(g, exist_ok=True)
+    f = os.path.join(g, name + '.ok')
+    if ok:
+        open(f, 'w').write(summary + '\n')
+    elif os.path.exists(f):
+        os.remove(f)
+
 
 if __name__ == "__main__":
     main()

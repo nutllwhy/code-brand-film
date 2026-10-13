@@ -17,6 +17,17 @@ metadata:
 
 # Code-generated brand films
 
+> **Three things decide whether a film ships. Do not skip any of them.**
+> 1. Read *all seven* files in the reading table below, plus the example's
+>    `src/index.tpl.html`. Reading only `creative.md` / `pipeline.md` /
+>    `scoring.md` reproduces the rejected films described here.
+> 2. Write `shot-list.md` and `copy.md` before the timeline.
+> 3. Run both gates and paste their output in your delivery:
+>    `scripts/film_audit.py film/index.html` before rendering,
+>    `scripts/frame_audit.py film/renders/silent.mp4` after.
+>    Both print `0 failed`, or the film is not delivered. Lint passing means
+>    the page is valid, not that the film is good.
+
 A film is one static HTML page inside `film/`, driven by a paused GSAP timeline
 that the renderer ([HyperFrames](https://github.com/heygen-com/hyperframes))
 seeks frame by frame. Every asset is a local file. The score is a separate Python
@@ -42,6 +53,15 @@ an abstract ink-drop animation covering 3% of the frame with no product in it.
 The tween count now excludes filler, and the pixel gate exists because pixels
 cannot be padded. If you find yourself adding tweens to pass a number, stop: the
 film is missing content, not motion. Aim at the reference example, not the floor.
+
+A third film came from an agent that read only `creative.md`, `pipeline.md`
+and `scoring.md`, never ran either gate, and "fixed the single worst frame"
+on a picture that was mostly empty. Metaphor: a stone thrown into a lake,
+ripples growing six glowing icons on a dark purple void. It linted with
+0 errors and had a loudness-matched score. It also had 36 tweens, 3 mechanics,
+no logo, no shot list, 1.3% of the frame covered and a 4.4s still stretch:
+13 failed checks. Everything it needed to avoid that was in the files it
+didn't open.
 
 ## Read these — in this order
 
@@ -89,7 +109,9 @@ Seeing how much one 15s film contains is worth more than any rule here.
    `examples/office-agent/reference-sheet.jpg`; answer the three comparison
    questions in `quality-bar.md`. If yours is clearly thinner, go back to step 6
    — add product on screen, not decoration. Then fix the single worst frame.
-9. **Score it** (`scripts/score_template.py` → `audio/score.py`), mix SFX,
+9. **Score it — only now, after both gates pass.** `score_lib` prints a
+   NOT READY banner if `.gates/` has no pass stamps from the two audits.
+   (`scripts/score_template.py` → `audio/score.py`), mix SFX,
    `loudnorm` to −14 LUFS, mux with `-c:v copy`.
 10. **Deliver** one `MEDIA:`/file line per output. State what you verified
     (both audits' numbers, lint, loudness, the reference comparison) and what only the user can judge

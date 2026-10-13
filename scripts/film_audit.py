@@ -256,7 +256,35 @@ def main() -> int:
         for x in warns:
             print('   -', x)
     print(f'\n  {len(fails)} failed' + (': ' + ', '.join(fails) if fails else ' — clear to render'))
+    _stamp(path, 'film_audit', not fails, f'{len(fails)} failed')
     return 1 if fails else 0
+
+
+def _project_root(p):
+    """Nearest ancestor that contains a film/ directory (the film project)."""
+    d = os.path.abspath(p if os.path.isdir(p) else os.path.dirname(p))
+    while True:
+        if os.path.isdir(os.path.join(d, 'film')):
+            return d
+        up = os.path.dirname(d)
+        if up == d:
+            return None
+        d = up
+
+
+def _stamp(path, name, ok, summary):
+    """Leave <project>/.gates/<name>.ok on pass, remove it on fail.
+    score_lib checks for both stamps before it writes the score."""
+    root = _project_root(path)
+    if not root:
+        return
+    g = os.path.join(root, '.gates')
+    os.makedirs(g, exist_ok=True)
+    f = os.path.join(g, name + '.ok')
+    if ok:
+        open(f, 'w').write(summary + '\n')
+    elif os.path.exists(f):
+        os.remove(f)
 
 
 if __name__ == '__main__':

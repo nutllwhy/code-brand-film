@@ -4,3 +4,4 @@ __pycache__/
 *.wav
 *.mp4
 .venv/
+.gates/

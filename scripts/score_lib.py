@@ -282,8 +282,9 @@ class Score:
 
     def write(self, path: str, **kwargs) -> str:
         """Write 16-bit 48 kHz stereo WAV. Returns the path."""
-        out = self.mix(**kwargs)
         path = os.path.abspath(path)
+        _check_gates(path)
+        out = self.mix(**kwargs)
         os.makedirs(os.path.dirname(path), exist_ok=True)
         pcm = (out.T * 32767).astype('<i2')
         with wave.open(path, 'wb') as w:
@@ -293,3 +294,35 @@ class Score:
             w.writeframes(pcm.tobytes())
         print('wrote', path, f'({self.dur:g}s)')
         return path
+
+
+def _check_gates(path):
+    """Scoring is the last step. If the picture has not passed both audits,
+    say so loudly: music on an under-built film is wasted work."""
+    d = os.path.dirname(path)
+    root = None
+    while True:
+        if os.path.isdir(os.path.join(d, 'film')):
+            root = d
+            break
+        up = os.path.dirname(d)
+        if up == d:
+            break
+        d = up
+    if not root:
+        return
+    missing = [n for n in ('film_audit', 'frame_audit')
+               if not os.path.exists(os.path.join(root, '.gates', n + '.ok'))]
+    if missing:
+        import sys
+        bar = '!' * 72
+        sys.stderr.write(f"""
+{bar}
+  NOT READY TO SCORE — the picture has not passed: {', '.join(missing)}
+  run  python3 <skill>/scripts/film_audit.py  film/index.html
+  and  python3 <skill>/scripts/frame_audit.py film/renders/silent.mp4
+  Both must print "0 failed". A film that fails them is not deliverable,
+  however good the music is. Go back to the timeline, not to the mix.
+{bar}
+
+""")

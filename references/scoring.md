@@ -1,5 +1,9 @@
 # Scoring a film in code
 
+> **Score last.** Only write the score after both `scripts/film_audit.py` and
+> `scripts/frame_audit.py` print `0 failed`. `score_lib.write()` prints a loud
+> warning if they have not — music does not rescue an under-built picture.
+
 A 15-second film needs music that lands on its cuts. Stock music does not know
 where the cuts are, and auditioning tracks takes longer than writing the part.
 So the score is produced the same way the film is: as code, in the picture's own
