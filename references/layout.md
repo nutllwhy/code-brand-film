@@ -34,9 +34,13 @@ Every act gets a **zone map** in `shot-list.md` before any CSS:
   (at least the logo's own height around it).
 - **Text never overlaps text.** A new line arrives after the old one has left
   or has moved out of its box.
-- **Corner marks stay alone.** If the film has a small brand mark in a corner,
-  nothing else is placed in that corner for the whole film. Notifications go
-  somewhere else.
+- **No corner marks.** No logo, wordmark or brand name parked in a corner for
+  the film (a TV-channel "bug"). It fights every composition it sits on, and a
+  brand film is not a broadcast. The logo appears once: in the lockup.
+  `layout_audit.mjs` fails a small brand mark held in a corner for ≥ 0.3 s
+  (an icon inside product UI — an input bar, an app window — is exempt).
+  A corner logo does **not** count as the persistent element that crosses acts.
+- **The lockup is one group, built for this frame.** See "The last frame" below.
 - **Title safe = 48 px.** No text closer than 48 px to any edge (96 px is
   better for headlines).
 - **Nothing parks half off-frame.** Things may enter and leave through an edge.
@@ -86,3 +90,34 @@ without it.
 What it does not catch: ugly but legal placement. After `0 failed`, still look
 at one still per act and ask: where does the eye land first, and is that the
 thing this act is about?
+
+## The last frame
+
+The lockup is the frame people screenshot. A rejected film ended on an official
+key-visual still that already had the product's name set in large 3D type, with
+the phone lying across those letters — then added its own logo, name, slogan,
+price and URL in a block in the lower left, far from the picture. Two titles,
+a product colliding with type, and a dead band of black between them; the 4:3
+still was contained in 16:9, so the picture sat small in the middle of a black
+field. Rules:
+
+- **Check every candidate end frame for type baked into the image** (record it
+  in `assets.md`). If the official frame already carries the name or headline,
+  either use it *as* the lockup with nothing added but a small logo / date
+  line under it on the same axis, or don't use it. Never stack your own title
+  next to the brand's title.
+- **Product never crosses the type.** Not in the image you pick, not in what
+  you add. If the hero frame has the product over its own letters, pick
+  another frame.
+- **One group, one axis.** Logo, name, line, CTA sit on the product's axis
+  (centred under it, or as a block vertically centred beside it), with a gap
+  smaller than the block's own height. Text in a far corner while the product
+  is in the middle reads as two layouts.
+- **Fill the frame for its shape.** Don't `object-fit: contain` a 4:3 still into
+  16:9; cover it and choose the crop, or scale the product so the group spans
+  at least half the frame height. Empty space is fine when it's one deliberate
+  field, not leftovers on three sides (`layout_audit.mjs` warns on contained
+  media).
+- Look at the last frame alone, full size, before delivering. Ask: is there one
+  thing to look at, and is it where the eye lands?
+

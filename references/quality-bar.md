@@ -37,7 +37,7 @@ Measured with `scripts/film_audit.py` on the three real films:
 | Official images besides the logo | 0 | 3 | 0 (a gap, not a model) | **≥ 2**, one showing the product |
 | Acts that depict the product actually working | 0 | 2 | 4 | **≥ 2** (shot list) |
 | Copy lines traceable to the brief / product page | 0 | all | all | **all** (shot list) |
-| A persistent element that crosses an act boundary | no | the logo hole | the input bar | **≥ 1** (shot list) |
+| A persistent element that crosses an act boundary | no | the logo hole | the input bar | **≥ 1** (shot list); a corner logo does not count and fails the layout gate |
 
 The last three rows are checked through two files that `film_audit.py` requires
 next to `film/`: `shot-list.md` (filled in before any HTML) and `copy.md` (every

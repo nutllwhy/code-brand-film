@@ -109,7 +109,10 @@ will read it.
 
 ## 4. `assets.md` — the manifest
 
-One row per non-font file in `film/assets/`, plus the logo checks:
+One row per non-font file in `film/assets/`, plus the logo checks. In Notes,
+say whether the image has **type baked in** (a headline, the product name in
+3D letters, a price) — such an image can't take a second title next to it
+(`layout.md`, "The last frame"):
 
 ```markdown
 # Assets
@@ -118,7 +121,7 @@ One row per non-font file in `film/assets/`, plus the logo checks:
 | --- | --- | --- | --- | --- |
 | assets/logo.svg | product lockup, dark-ground variant | https://example.com/ (header inline svg) | 2026-10-13 | vector |
 | assets/screen-1.png | task panel screenshot | https://apps.apple.com/app/id000 (screenshot 2) | 2026-10-13 | 2048×1536 |
-| assets/hero.jpg | launch key visual | https://example.com/ (og:image) | 2026-10-13 | 1920×1080 |
+| assets/hero.jpg | launch key visual (type baked in: product name) | https://example.com/ (og:image) | 2026-10-13 | 1920×1080 |
 
 ## Logo check
 - Right product: the "Work" edition's own lockup, from its product page — not the parent app icon

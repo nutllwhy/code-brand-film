@@ -65,6 +65,8 @@ consecutive rows use the same one.
 - [ ] Exactly one pull-back in the whole film
 - [ ] The final landing (stamp / collapse / lockup) is on a downbeat
 - [ ] The real logo file is used; nothing is redrawn as a primitive
+- [ ] The logo appears in the lockup only — no corner mark through the film
+- [ ] The end frame has no type baked in, or it is used as the lockup without a second title; the product doesn't cross any type; lockup is one group on the product's axis
 
 ## Worked example (an office-automation agent, 15s, light palette)
 

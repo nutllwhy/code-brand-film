@@ -11,6 +11,8 @@
 //   text clipped    text cut by the frame edge
 //   safe area       text inside the outer 48 px margin
 //   parked off-edge a card / image holding still while partly off-frame
+//   corner logo     a small brand mark parked in a corner (a TV-channel bug); the logo belongs in the lockup only
+//   letterboxed     an image / video with object-fit: contain leaving bars on a large box
 //                   (a deliberate bleed: put data-bleed on it and give it >= 25% off-frame)
 //
 // Each problem must last >= 0.3 s to count (passing motion is allowed).
@@ -166,6 +168,33 @@ const probe = ({ SAFE, W, H }) => {
     else if (hi < 0.95 && on >= area * 0.75 && on < area * 0.95)
       blocks.push({ key: nameOf(el) + ' (data-bleed but only ' + Math.round(100 - on / area * 100) + '% off — commit or pull it in)', rect: [r.left, r.top, r.width, r.height].map(Math.round) });
   }
+  // brand mark parked in a corner: small, near two edges at once
+  const isLogo = el => /logo|mark|symbol|wordmark|brand/i.test((el.id || '') + ' ' + (typeof el.className === 'string' ? el.className : (el.className && el.className.baseVal) || '') + ' ' + (el.getAttribute('src') || '') + ' ' + (el.getAttribute('alt') || ''));
+  for (const el of all) {
+    if (!isLogo(el) || effOpacity(el) < 0.3) continue;
+    const r = el.getBoundingClientRect(); const area = r.width * r.height;
+    if (area < 50 || area > W * H * 0.03) continue;
+    const cx = (r.left + r.right) / 2, cy = (r.top + r.bottom) / 2;
+    if (cx < 0 || cy < 0 || cx > W || cy > H) continue;
+    const corner = (cx < W * 0.2 || cx > W * 0.8) && (cy < H * 0.2 || cy > H * 0.8);
+    // an icon inside a piece of product UI (an input bar, a card, an app window) is the UI, not a channel bug
+    let inUi = false;
+    for (let n = el.parentElement, k = 0; n && k < 5; n = n.parentElement, k++) {
+      const q = n.getBoundingClientRect();
+      if (q.width * q.height > area * 6 && q.width * q.height < W * H * 0.8 && alpha(getComputedStyle(n).backgroundColor) > 0.5) { inUi = true; break; }
+    }
+    if (corner && !inUi && !(el.parentElement && isLogo(el.parentElement) && el.parentElement.getBoundingClientRect().width * el.parentElement.getBoundingClientRect().height <= W * H * 0.03))
+      out.push({ kind: 'corner logo', key: nameOf(el), detail: 'brand mark parked in a corner — show the logo in the lockup only' });
+  }
+  // media letterboxed by object-fit: contain
+  for (const el of all) {
+    if (el.tagName !== 'IMG' && el.tagName !== 'VIDEO') continue;
+    if (getComputedStyle(el).objectFit !== 'contain' || effOpacity(el) < 0.3) continue;
+    const r = el.getBoundingClientRect(); if (r.width * r.height < W * H * 0.4) continue;
+    const nw = el.naturalWidth || el.videoWidth, nh = el.naturalHeight || el.videoHeight; if (!nw || !nh) continue;
+    const a = nw / nh, b = r.width / r.height;
+    if (Math.abs(a - b) / b > 0.03) out.push({ kind: 'letterboxed', key: nameOf(el), detail: `${nw}x${nh} contained in ${Math.round(r.width)}x${Math.round(r.height)} — bars; use cover and choose the crop` });
+  }
   return { out, blocks };
 };
 
@@ -219,13 +248,18 @@ if (SHOTS && problems.length) {
 }
 await browser.close();
 
-const kinds = ['text hidden', 'text collision', 'text clipped', 'safe area', 'parked off-edge'];
+const kinds = ['text hidden', 'text collision', 'text clipped', 'safe area', 'parked off-edge', 'corner logo'];
 console.log(`layout audit  ${path.resolve(file)}  (${dur}s, every ${STEP}s, problems lasting >= ${MIN_RUN}s)\n`);
 for (const k of kinds) {
   const ps = problems.filter(p => p.kind === k);
   console.log(`  ${ps.length ? 'FAIL' : 'PASS'}  ${k.padEnd(18)} ${ps.length}`);
   for (const p of ps.slice(0, 8)) console.log(`        ${p.from.toFixed(1)}-${p.to.toFixed(1)}s  ${p.key}${p.detail ? '  — ' + p.detail : ''}`);
   if (ps.length > 8) console.log(`        … ${ps.length - 8} more`);
+}
+const lb = problems.filter(p => p.kind === 'letterboxed');
+if (lb.length) {
+  console.log('\n  warnings (letterboxed media — fine only if the bars match the stage AND the product still fills the frame):');
+  for (const p of lb.slice(0, 4)) console.log(`        ${p.from.toFixed(1)}-${p.to.toFixed(1)}s  ${p.key}  — ${p.detail}`);
 }
 const failed = kinds.filter(k => problems.some(p => p.kind === k));
 const gate = path.join(path.dirname(path.dirname(path.resolve(file))), '.gates');

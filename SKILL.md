@@ -192,6 +192,11 @@ python3 <skill>/scripts/frame_audit.py renders/silent.mp4        # pixel gate: m
   rings / cursors drawn on the product, one signature transition from the
   product's own shape on ≥ 3 act changes, every product shot anchored to the
   same screen line, copy from the brand's page in the audience's language.
+- **The logo lives in the lockup, nowhere else.** No corner mark through the
+  film (the layout gate fails it). The last frame is one group on the product's
+  axis; never add your own title next to an official frame that already has
+  type in it, never let the product cross the type, never `contain` a
+  non-16:9 still so it floats in bars (`references/layout.md`, "The last frame").
 - **No template look.** No beige/orange-pink lifestyle palettes, no centring
   everything, no equal-length acts doing the same thing. The accent colour is a
   highlight, not a ground.
@@ -209,7 +214,7 @@ python3 <skill>/scripts/frame_audit.py renders/silent.mp4        # pixel gate: m
 
 ```
 scripts/film_audit.py       code gate, before render (floors, shot list, copy and asset sources)
-scripts/layout_audit.mjs    placement gate, headless Chrome (hidden / colliding / clipped text, safe area, half-parked cards)
+scripts/layout_audit.mjs    placement gate, headless Chrome (hidden / colliding / clipped text, safe area, half-parked cards, corner logos)
 scripts/frame_audit.py      pixel gate, after render (coverage, detail, motion)
 scripts/harvest_page_images.py  every image (and with --video every product clip) on an official page → index.tsv + contact sheets
 scripts/fetch_cjk_fonts.sh  Noto Serif/Sans SC subsets for exactly the characters used
