@@ -44,6 +44,15 @@ next to `film/`: `shot-list.md` (filled in before any HTML) and `copy.md` (every
 on-screen line with its source — the audit fails on any visible text missing from
 it). See `examples/office-agent/` for both.
 
+## Footage-led films use different floors
+
+When ≥ 2 official clips are on screen for ≥ 40% of the film, `film_audit.py`
+switches to footage-led floors (≥ 60 tweens, ≥ 5 mechanics, ≥ 6 eases, ≥ 5
+camera moves, no grain over studio-ground footage, stage = sampled ground,
+a signature transition on ≥ 3 exits). An accepted footage film failed six of
+the UI-film floors, and a rejected one passed all of them by decorating still
+photos — details and rules in [footage-led.md](footage-led.md).
+
 ## Floors are not targets — the second failure
 
 After the floors above were published, another agent built a film that cleared

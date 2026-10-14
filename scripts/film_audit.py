@@ -53,7 +53,76 @@ TRANSITIONS = [
     ("iris", r'clipPath\s*:\s*["\']circle\(\d{3,}px'),
     ("lateral whip", r'x\s*:\s*-\d{3}\s*,\s*opacity\s*:\s*0'),
     ("collapse to point", r'scale\s*:\s*0\.[0-3]\d?\s*,\s*opacity\s*:\s*0'),
+    ("seam open (clip from a line)", r'clip-?[pP]ath\s*:\s*["\']inset\(\s*0(?:px)?\s+\d{3}px\s+0(?:px)?\s+\d{3}px'),
+    ("fold on a hinge (two halves)", r'rotationY\s*:\s*-\s*(?:8\d|9\d)\b'),
+    ("screen portal", r'clip-?[pP]ath\s*:\s*`?["\']?inset\([^)]*round'),
 ]
+
+# drawn UI furniture laid over official imagery (focus brackets, capture rings, cursors)
+HUD_RE = re.compile(r'class="[^"]*\bcorner\b|id="[^"]*(?:focus|capture|ring|bracket|cursor|reticle)[^"]*"', re.I)
+
+
+def media_coverage(html: str, dur: float) -> tuple[int, float]:
+    """(number of <video> elements, share of runtime with at least one video on screen)."""
+    spans = []
+    for tag in re.findall(r'<video\b[^>]*>', html):
+        a = re.search(r'data-start="([\d.]+)"', tag); d = re.search(r'data-duration="([\d.]+)"', tag)
+        if a:
+            s0 = float(a.group(1)); spans.append((s0, s0 + (float(d.group(1)) if d else dur - s0)))
+    spans.sort(); cov, end = 0.0, 0.0
+    for a, b in spans:
+        a = max(a, end); b = min(b, dur)
+        if b > a:
+            cov += b - a; end = b
+    return len(spans), cov / dur if dur else 0
+
+
+def studio_grounds(root: str, html: str):
+    """Assets shot on a flat studio ground: [(file, '#rrggbb')]. Needs pillow; ffmpeg for video."""
+    try:
+        from PIL import Image
+    except ImportError:
+        return None
+    import subprocess, tempfile
+    out = []
+    files = re.findall(r'<img[^>]+src="(assets/[^"]+\.(?:jpe?g|png|webp))"', html)
+    vids = re.findall(r'<video\b[^>]*src="(assets/[^"]+)"', html)
+    for f in files + vids:
+        p = os.path.join(root, f)
+        if not os.path.exists(p) or re.search(r'logo|icon|mark|font', f, re.I):
+            continue
+        try:
+            if f in vids:
+                tmp = tempfile.mktemp(suffix='.png')
+                subprocess.run(['ffmpeg', '-v', 'error', '-y', '-ss', '0.3', '-i', p, '-frames:v', '1', tmp],
+                               check=True, capture_output=True)
+                im = Image.open(tmp).convert('RGB')
+            else:
+                im = Image.open(p).convert('RGB')
+        except Exception:
+            continue
+        im.thumbnail((480, 480)); w, h = im.size; px = im.load()
+        ring = [px[x, y] for x in range(w) for y in (0, 1, h - 2, h - 1)] + \
+               [px[x, y] for y in range(h) for x in (0, 1, w - 2, w - 1)]
+        ring.sort(key=sum); mid = ring[len(ring) // 2]
+        near = sum(1 for c in ring if max(abs(c[i] - mid[i]) for i in range(3)) <= 4) / len(ring)
+        if near >= 0.6:  # most of the border is one flat colour: a studio ground
+            out.append((f, '#%02x%02x%02x' % mid))
+    return out
+
+
+def css_colours(css: str):
+    cols = set()
+    for m in re.findall(r'background(?:-color)?\s*:\s*(#[0-9a-fA-F]{3,6})\b', css):
+        h = m[1:]
+        if len(h) == 3:
+            h = ''.join(c * 2 for c in h)
+        cols.add('#' + h.lower())
+    return cols
+
+
+def hexdist(a, b):
+    return max(abs(int(a[i:i + 2], 16) - int(b[i:i + 2], 16)) for i in (1, 3, 5))
 
 
 def strip_comments(js: str) -> str:
@@ -112,6 +181,13 @@ def main() -> int:
 
     fails, warns, rows = [], [], []
 
+    # Footage-led: the brand ships its own product motion and the film cuts it.
+    # Floors written for code-drawn UI films would push such a film into busy-ness
+    # (an accepted footage-led film scored 79 tweens / 6 mechanics / 7 camera moves).
+    n_vid, vid_cov = media_coverage(html, dur)
+    footage = n_vid >= 2 and vid_cov >= 0.4
+    F = dict(tweens=60, mech=5, eases=6, cam=5) if footage else dict(tweens=90, mech=8, eases=8, cam=8)
+
     def check(name, value, floor, ok, note=''):
         rows.append((name, value, floor, 'PASS' if ok else 'FAIL', note))
         if not ok:
@@ -134,17 +210,17 @@ def main() -> int:
         mult, g = loop_multiplier(js, m.start())
         tweens += mult
         guessed_loops |= g
-    floor_tw = round(90 * k)
+    floor_tw = round(F['tweens'] * k)
     check('tweens (loops expanded, filler excluded)', tweens, f'>= {floor_tw}', tweens >= floor_tw,
           '; '.join(x for x in ['loop count estimated' if guessed_loops else '',
                                 f'{filler} filler not counted' if filler else ''] if x))
 
     # ---- variety
     eases = sorted(set(EASE_RE.findall(js)))
-    check('distinct eases', len(eases), '>= 8', len(eases) >= 8, ', '.join(eases))
+    check('distinct eases', len(eases), f">= {F['eases']}", len(eases) >= F['eases'], ', '.join(eases))
 
     mech = [n for n, rx in MECHANICS if re.search(rx, js)]
-    check('entrance mechanics', len(mech), '>= 8', len(mech) >= 8, ', '.join(mech))
+    check('entrance mechanics', len(mech), f">= {F['mech']}", len(mech) >= F['mech'], ', '.join(mech))
 
     trans = [n for n, rx in TRANSITIONS if re.search(rx, js)]
     check('non-crossfade transitions', len(trans), '>= 2', len(trans) >= 2, ', '.join(trans))
@@ -156,7 +232,7 @@ def main() -> int:
     cams = len(re.findall(r'class="cam"', html))
     check('camera layers (.cam)', cams, '>= 3', cams >= 3)
     cam_moves = len(re.findall(r'tl\.(?:to|fromTo|from)\(\s*["\']#cam\d', js))
-    check('camera moves', cam_moves, '>= 8', cam_moves >= 8)
+    check('camera moves', cam_moves, f">= {F['cam']}", cam_moves >= F['cam'])
 
     # events per act: tweens whose start time falls in each act window, bucketed
     starts = [float(x) for x in re.findall(r'\}\s*,\s*(\d+(?:\.\d+)?)\s*\)\s*;', js)]
@@ -169,7 +245,33 @@ def main() -> int:
 
     # ---- depth & chrome
     has_grain = bool(re.search(r'feTurbulence', html))
-    check('grain texture', 'yes' if has_grain else 'no', 'yes', has_grain)
+    if footage:
+        rows.append(('mode', f'footage-led: {n_vid} videos, {vid_cov:.0%} of runtime', '', 'INFO',
+                     'floors for cut-the-brand\'s-motion films — references/footage-led.md'))
+    else:
+        check('grain texture', 'yes' if has_grain else 'no', 'yes', has_grain)
+
+    # studio-ground assets: the stage must be the same colour, and no texture may sit on top
+    grounds = studio_grounds(root, html)
+    if grounds is None:
+        warns.append('pillow not installed: studio-ground match not checked (pip install pillow)')
+    elif grounds:
+        stage = css_colours(css)
+        bad = []
+        for f, g in grounds:
+            d = min((hexdist(g, c) for c in stage), default=255)
+            if d > 3:
+                bad.append(f'{os.path.basename(f)} ground {g} (nearest stage colour off by {d})')
+        check('stage colour = asset studio ground', f'{len(grounds) - len(bad)}/{len(grounds)}', 'all within 3',
+              not bad, ('; '.join(bad[:3]) + ' — sample the ground, use that hex') if bad else '')
+        texture = has_grain or bool(re.search(r'id="(?:falloff|vignette)\w*"', html))
+        if footage:
+            check('no grain / falloff over studio-ground footage', 'present' if texture else 'none', 'none',
+                  not texture, 'it tints the ground and the clip edges show — references/footage-led.md' if texture else '')
+    hud = len(HUD_RE.findall(html))
+    if hud >= 3 and (footage or grounds):
+        warns.append(f'{hud} drawn UI marks (focus corners / rings / cursors) over official imagery — reads as a '
+                     'software demo. Keep them only if they reproduce the product\'s own UI (references/footage-led.md)')
     grain_moves = bool(re.search(r'["\']#grain["\'][^;]*steps\(', js))
     if has_grain and not grain_moves:
         warns.append('grain is static — animate it with ease: "steps(N)" over the whole film')
@@ -272,6 +374,22 @@ def main() -> int:
                 if len(cells) >= 4 and all(cells[1:4]): zm += 1
     check('zone map per act in shot-list.md', f'{zm} acts', '>= 5', zm >= 5,
           'plan headline / product / logo zones per act first — references/layout.md' if zm < 5 else '')
+
+    sig, sig_n = '', 0
+    if sl:
+        t = open(sl, encoding='utf-8').read()
+        m = re.search(r'(?im)^[\s*\-]*\**signature transition\**\s*[:：]\**\s*(.+)$', t)
+        if m and len(re.sub(r'[\s*_`]+', '', m.group(1))) >= 4:
+            sig = m.group(1).strip()
+            sig_n = len(re.findall(r'(?im)^.*\bexit\b.*\bsignature\b', t))
+    sig_ok = bool(sig) and sig_n >= 3
+    if footage:
+        check('signature transition named + used on >= 3 exits', f'{sig_n} exits' if sig else 'missing',
+              '>= 3', sig_ok,
+              '' if sig_ok else 'one move from the product\'s own geometry, repeated — references/footage-led.md')
+    elif not sig_ok:
+        warns.append('no signature transition in shot-list.md — films where one move (taken from the product\'s '
+                     'shape) carries most act changes read as one idea, not a sampler')
 
     cp = find('copy.md')
     body = re.sub(r'<(script|style)[^>]*>.*?</\1>', ' ', html, flags=re.S)

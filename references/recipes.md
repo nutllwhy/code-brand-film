@@ -39,6 +39,12 @@ unless you have a reason — they are what make each move read correctly.
 21. Viewfinder / device HUD over footage
 22. Claim-proof shots (log → graded wipe, lossless zoom, meter)
 23. Light sweep across a product photo
+24. Fold on the seam (two halves rotate shut on a centre line)
+25. Seam open (next shot opens out of a line)
+26. Anchor match cut (two clips, one hinge position)
+27. Pose burst (several stills on one anchor, < 0.5 s each)
+
+Recipes 24–27 belong to footage-led films — read `footage-led.md` first.
 
 ---
 
@@ -424,3 +430,84 @@ tl.fromTo("#sweep", { opacity: 1, backgroundPosition: "1300px 0" }, { background
 ```
 color-dodge only brightens what is already lit, so the band rides the edges of
 the product and leaves the black ground black.
+
+## 24. Fold on the seam
+
+The current picture splits into two halves that rotate shut on the centre line,
+like a book closing. Build the act as two clipped halves of the same content
+(duplicate any `<video>` file so each half has its own copy):
+
+```css
+.persp { perspective: 2400px; perspective-origin: 960px 540px; }
+.half { position:absolute; top:0; width:960px; height:1080px; overflow:hidden; backface-visibility:hidden; }
+.half.l { left:0;     transform-origin: 960px 540px; }
+.half.r { left:960px; transform-origin: 0px 540px; }
+.half .inner { position:absolute; top:0; width:1920px; height:1080px; }
+.half.r .inner { left:-960px; }
+.shade { position:absolute; inset:0; opacity:0; pointer-events:none; }
+.half.l .shade { background: linear-gradient(90deg, rgba(0,0,0,.05), rgba(0,0,0,.42)); }
+.half.r .shade { background: linear-gradient(270deg, rgba(0,0,0,.05), rgba(0,0,0,.42)); }
+```
+```html
+<div id="a3" class="scene persp">
+  <div id="a3L" class="half l"><div class="inner"><div class="cam">…content…</div></div><div class="shade"></div></div>
+  <div id="a3R" class="half r"><div class="inner"><div class="cam">…same content…</div></div><div class="shade"></div></div>
+</div>
+```
+```js
+tl.set("#seam", { opacity: 1, scaleY: 1 }, T - 0.02);
+tl.to("#a3L", { rotationY: -89, duration: 0.42, ease: "power3.in" }, T);
+tl.to("#a3R", { rotationY:  89, duration: 0.42, ease: "power3.in" }, T);
+tl.to("#a3 .shade", { opacity: 1, duration: 0.42, ease: "power2.in" }, T);   // the crease darkens
+```
+Put `perspective` on the scene that holds the halves, not on a parent that also
+has `transform` — a transformed ancestor flattens `preserve-3d` and the fold
+looks like a squash. Text can fold too: split a line into its two words, one
+per half (`transform-origin` at the seam side of each word).
+
+## 25. Seam open
+
+The next shot opens out of the same line the last one folded into:
+
+```js
+tl.fromTo("#a4", { clipPath: "inset(0px 958px 0px 958px)" },
+                 { clipPath: "inset(0px 0px 0px 0px)", duration: 0.45, ease: "expo.out" }, T + 0.4);
+tl.to("#seam", { opacity: 0, duration: 0.25 }, T + 0.5);
+```
+Fold (24) + open (25) is one signature transition. Used on every act change it
+is the film's grammar; the audience reads one idea instead of a sampler.
+
+## 26. Anchor match cut
+
+Two different clips cut as one motion when the same part of the product sits
+on the same screen position on both sides of the cut. Find it, don't guess:
+
+```bash
+ffmpeg -ss 2.9 -i a.mp4 -frames:v 1 a_end.png; ffmpeg -ss 0.45 -i b.mp4 -frames:v 1 b_start.png
+python3 - <<'PY'
+import numpy as np; from PIL import Image
+for f in ("a_end.png", "b_start.png"):
+    a = np.asarray(Image.open(f).convert("RGB")).astype(int)
+    m = np.abs(a - a[2, 2]).sum(2) > 24            # not the studio ground
+    ys, xs = np.where(m); print(f, "content x", xs.min(), xs.max(), "y", ys.min(), ys.max())
+PY
+```
+Then set each clip's container `x / scale` (in the act's `.cam`) so the hinge
+x (or lens centre, or screen corner) is identical in both, and choose
+`data-media-start` so the poses match. Cut on a hard ease, no crossfade.
+
+## 27. Pose burst
+
+Several official stills of the product in different poses, each 0.25–0.35 s,
+all placed on the same anchor (recipe 26) with a label that changes with them.
+It is the one place stills belong in a footage film: the cut rate is the motion.
+
+```js
+const poseT = [8.1, 8.4, 8.7, 9.0, 9.3];
+poseT.forEach((t, i) => {
+  tl.set(`#p${i + 1}`, { opacity: 1 }, t);  tl.set(`#l${i + 1}`, { opacity: 1 }, t);
+  if (i < poseT.length - 1) { tl.set(`#p${i + 1}`, { opacity: 0 }, poseT[i + 1]); tl.set(`#l${i + 1}`, { opacity: 0 }, poseT[i + 1]); }
+});
+tl.fromTo("#posew", { scale: 0.82 }, { scale: 0.9, duration: 1.5, ease: "none" }, 8.1);   // one slow push under the cuts
+```
+Put a click or a short tick on every pose change in the score.

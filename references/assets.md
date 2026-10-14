@@ -27,6 +27,11 @@ for the logo check in step 2.
    - `<link rel="icon">`, `apple-touch-icon`, `manifest.json` icons (largest size)
    - `og:image` / `twitter:image` — the brand's chosen hero picture
    - hero and feature images, product screenshots, demo video posters
+   - **product motion**: `harvest_page_images.py <page> --video` pulls the
+     page's animations and films. If the brand ships motion, the film is
+     footage-led — read `footage-led.md` before the shot list.
+   - the same page **in the audience's language** (country site): the copy
+     comes from there, and it can carry different clips
 4. **The app store listing** (App Store / Google Play / Mac App Store / the
    Windows store): the current app icon at 512–1024px and 5–10 official
    screenshots of the real interface. This is the best source of what the

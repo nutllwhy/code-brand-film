@@ -10,6 +10,15 @@ Writes:
   research/index.tsv           n, width, height, bytes, url  (svg width = 0)
   research/sheet-<k>.jpg       contact sheets of everything >= --min px wide, labelled by n
 
+    python3 harvest_page_images.py <url> --out research --video
+
+--video also pulls the page's own product motion: direct .mp4/.webm links and
+"anim/<name>/" style directories that big brand sites load by script (tries
+large_2x.mp4, large.mp4, medium.mp4). Writes research/video/<name>.mp4 and
+research/video/index.tsv (name, width, height, seconds, url) plus
+research/video-sheet.jpg (one mid frame each). If a brand ships motion, cut it
+— see references/footage-led.md. ffprobe/ffmpeg needed for the sheet.
+
 Then open the sheets, pick by number, and copy the URL from index.tsv into
 assets.md. Product pages hide most images in srcset / data-src / CSS
 background-image / JSON blobs; a plain <img src> scan finds a third of them.
@@ -41,11 +50,76 @@ def urls_in(page_url, text):
     return sorted(found)
 
 
+VID = re.compile(r"""(?:https?:)?//[^\s"'()<>\\]+?\.(?:mp4|webm)(?:\?[^\s"'()<>\\]*)?|(?<=["'])/[^\s"'()<>\\]+?\.(?:mp4|webm)(?=["'?])""", re.I)
+ANIM = re.compile(r"""["']((?:https?:)?/[^"'\s]*?/anim/[a-z0-9_-]+/)["']""", re.I)
+
+
+def harvest_video(pages, out):
+    import json, subprocess
+    os.makedirs(f"{out}/video", exist_ok=True)
+    cands = {}
+    for page_url, text in pages:
+        text = html.unescape(text).replace("\\/", "/")
+        for m in VID.findall(text):
+            u = urllib.parse.urljoin(page_url, "https:" + m if m.startswith("//") else m)
+            name = re.sub(r"[^a-z0-9_-]+", "-", u.split("?")[0].rsplit("/", 1)[-1].rsplit(".", 1)[0].lower())
+            cands.setdefault(name, [u])
+        for d in ANIM.findall(text):
+            base = urllib.parse.urljoin(page_url, "https:" + d if d.startswith("//") else d)
+            name = base.rstrip("/").rsplit("/", 1)[-1].lower()
+            cands.setdefault(name, [base + v for v in ("large_2x.mp4", "large.mp4", "medium.mp4", "small.mp4")])
+    rows = []
+    for name, tries in sorted(cands.items()):
+        for u in tries:
+            try:
+                data = get(u, timeout=60)
+            except Exception:
+                continue
+            if len(data) < 20000:
+                continue
+            p = f"{out}/video/{name}.mp4"
+            open(p, "wb").write(data)
+            w = h = 0; sec = 0.0
+            try:
+                j = json.loads(subprocess.run(["ffprobe", "-v", "error", "-select_streams", "v:0", "-show_entries",
+                                               "stream=width,height:format=duration", "-of", "json", p],
+                                              capture_output=True, text=True).stdout)
+                w, h = j["streams"][0]["width"], j["streams"][0]["height"]; sec = float(j["format"]["duration"])
+            except Exception:
+                pass
+            rows.append((name, w, h, sec, u, p)); break
+    with open(f"{out}/video/index.tsv", "w") as f:
+        f.write("name\twidth\theight\tseconds\turl\n")
+        for r in rows:
+            f.write(f"{r[0]}\t{r[1]}\t{r[2]}\t{r[3]:.2f}\t{r[4]}\n")
+    print(f"{len(rows)} videos of {len(cands)} candidates -> {out}/video/index.tsv")
+    try:
+        from PIL import Image, ImageDraw
+        import tempfile
+    except ImportError:
+        return
+    cols, tw, th = 4, 480, 270
+    if not rows:
+        return
+    S = Image.new("RGB", (cols * tw, ((len(rows) + cols - 1) // cols) * (th + 18)), (40, 40, 40)); dr = ImageDraw.Draw(S)
+    for i, r in enumerate(rows):
+        tmp = tempfile.mktemp(suffix=".jpg")
+        subprocess.run(["ffmpeg", "-v", "error", "-y", "-ss", f"{r[3] / 2:.2f}", "-i", r[5], "-frames:v", "1", tmp])
+        try:
+            im = Image.open(tmp).convert("RGB"); im.thumbnail((tw, th))
+        except Exception:
+            continue
+        x, y = (i % cols) * tw, (i // cols) * (th + 18)
+        S.paste(im, (x, y)); dr.text((x + 4, y + th + 3), f"{r[0]}  {r[1]}x{r[2]}  {r[3]:.1f}s", fill=(255, 255, 255))
+    S.save(f"{out}/video-sheet.jpg", quality=85); print("sheet:", f"{out}/video-sheet.jpg")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("urls", nargs="+")
     ap.add_argument("--out", default="research")
     ap.add_argument("--min", type=int, default=900, help="min width for contact sheets")
+    ap.add_argument("--video", action="store_true", help="also pull official product motion")
     a = ap.parse_args()
     os.makedirs(f"{a.out}/pages", exist_ok=True); os.makedirs(f"{a.out}/raw", exist_ok=True)
 
@@ -57,6 +131,9 @@ def main():
         print(f"{u}: {len(body)} bytes, {len(us)} image urls")
         all_urls += us
     all_urls = list(dict.fromkeys(all_urls))
+    if a.video:
+        pages = [(u, open(f"{a.out}/pages/page{i}.html").read()) for i, u in enumerate(a.urls)]
+        harvest_video(pages, a.out)
 
     def fetch(u):
         try:

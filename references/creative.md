@@ -24,6 +24,7 @@ Two real examples, both delivered and both accepted:
 | --- | --- | --- | --- |
 | A · memory-first AI assistant (dark) | "What stays with you, shapes what comes next." | The logo is a blob with an off-centre hole. Treat that hole as a camera lens: dive into it at the start, collapse the whole world back into it at the end. | 5 acts: FORGET (text falls apart) → REMEMBER (floating memory cards in the lens) → ACT (verbs firing) → IMPRINT (official imagery through an iris) → LOCKUP (everything falls back into the hole) |
 | C · pocket gimbal camera (dark, hardware) | The product's official slogan, used as the opening line. | The device has a flip-out screen: go **in through its own screen**, and the rest of the film is what that screen sees. | 5 acts: product photo pulled out of a macro close-up with a light sweep → footage appears on the device's screen, camera dives through it → viewfinder HUD over four official sample shots, one feature proven per shot → zoom button 1×→2× and the frame pushes 2× → stabiliser mechanism, then wordmark + logo + slogan |
+| D · foldable phone (white, hardware, footage-led) | The page's two-word greeting, one word on each side of the fold. | The product folds on a hinge: put a seam down the middle of the frame and make **every act change a fold shut on it and an opening out of it**. Every product shot is placed with its hinge on the seam. | 5 acts: greeting folds shut → hero clip opens out of the seam → hinge-to-hinge match cut into the big-screen clip, screen size number flips → five poses in 1.5 s → titanium hinge macro shrinks to a line, the line turns 90° into the seam, the name splits around it. See `footage-led.md`. |
 | B · office-automation agent (light) | The product's key line ends on a decision verb ("…and you make the call"). | Take that last verb literally. Make it an actual stamp that slams on the final downbeat. | 5 acts: one sentence typed → six pipeline steps → laptop shut, work keeps running in the cloud → deliverables arrive → the stamp |
 
 The test: can you say the film's idea in one sentence that contains a *physical
@@ -101,7 +102,9 @@ promotional template. Two palettes that worked:
 slide" look. Put the headline at x=120 and the object at x=640. Let things run
 off the edge.
 
-**Add texture.** A paper-grain SVG turbulence layer at 11–16% and a radial
+**Add texture — unless the brand's footage is the picture.** (Over a brand's
+white or black studio sweep, texture tints the ground and every clip edge
+shows; see `footage-led.md`.) A paper-grain SVG turbulence layer at 11–16% and a radial
 falloff are what separate "rendered" from "designed". A barely-moving grain
 (`x: 26, ease: "steps(45)"` over the full film) costs nothing and removes the
 sterile flatness of a pure vector frame.

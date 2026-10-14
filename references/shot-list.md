@@ -25,6 +25,8 @@ delivery.
 - **Where the metaphor comes from** (which asset, which word in the brief):
 - **Palette:** base / foreground / accent / secondary — and why the accent is used as a highlight here, not a ground.
 - **Beat grid:** seconds per beat, and which on-screen event sets it.
+- **Signature transition:** one move taken from the product's own shape (hinge → fold on a seam, lens → iris, screen → portal). Mark the act exits that use it with the word "signature". Required for footage-led films (≥ 3 exits).
+- **Studio ground:** the hex sampled from the official photos / clips, which becomes the stage colour (footage-led films; `footage-led.md`).
 
 ## Part 3 — acts
 

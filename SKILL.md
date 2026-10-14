@@ -18,7 +18,7 @@ metadata:
 # Code-generated brand films
 
 > **Three things decide whether a film ships. Do not skip any of them.**
-> 1. Read *all nine* files in the reading table below, plus the example's
+> 1. Read *all ten* files in the reading table below, plus the example's
 >    `src/index.tpl.html`. Reading only `creative.md` / `pipeline.md` /
 >    `scoring.md` reproduces the rejected films described here.
 > 2. Search for the brand's real logo and imagery and record them in
@@ -69,6 +69,17 @@ no logo, no shot list, 1.3% of the frame covered and a 4.4s still stretch:
 13 failed checks. Everything it needed to avoid that was in the files it
 didn't open.
 
+A fourth film followed every step, passed all three gates (109 tweens, 10
+mechanics) and still lost clearly to a film of the same product that would have
+*failed* the old floors. The brand had shipped its own product animations; the
+losing film used three of them, held two still photos for six seconds under
+focus brackets and capture rings, put grain over the brand's white sweep, and
+changed acts with a different trick every time. The winner cut seven official
+clips on a stage sampled to their exact ground, drew nothing on the product,
+and used one transition taken from the product's hinge on every act change.
+When the brand ships motion, read `references/footage-led.md` — the audit
+switches to its floors automatically.
+
 ## Read these — in this order
 
 | Step | File | Why |
@@ -77,8 +88,9 @@ didn't open.
 | before placing anything | [references/layout.md](references/layout.md) | zone map per act, hard placement rules (text never covered, logo never on text, title safe, no half-parked cards) |
 | before anything | [references/assets.md](references/assets.md) | where to search for the real logo and imagery, the five-point logo check, the `assets.md` manifest |
 | before anything | [references/quality-bar.md](references/quality-bar.md) | the numbers, the mechanic list, the transition list, product truth, real assets |
+| if the brand has product video | [references/footage-led.md](references/footage-led.md) | footage-led films: harvest the motion, stage = studio ground, no texture, one signature transition from the product's shape, draw nothing on the product, localised copy |
 | before coding | [references/shot-list.md](references/shot-list.md) | the table you fill in first; worked example included |
-| while coding | [references/recipes.md](references/recipes.md) | copyable GSAP for all 19 mechanics and transitions |
+| while coding | [references/recipes.md](references/recipes.md) | copyable GSAP for 27 mechanics and transitions (24–27: fold on a seam, seam open, anchor match cut, pose burst) |
 | while coding | [examples/office-agent/](examples/office-agent/) | a complete 400-line film that clears every floor — read its timeline |
 | scaffold / render | [references/pipeline.md](references/pipeline.md) | layout, template+build, lint warnings, macOS pitfalls, defect checklist |
 | music | [references/scoring.md](references/scoring.md) | beat grid from picture, energy plan, mix graph, verify without ears |
@@ -97,8 +109,12 @@ Seeing how much one 15s film contains is worth more than any rule here.
    (right product, current version, right variant, untouched, resolution) and
    write it all into `assets.md` with source URLs. Never redraw a logo, never
    take one from a logo-aggregator site. Start with
-   `scripts/harvest_page_images.py <product-page>` — it pulls every image and
-   SVG the page uses and makes numbered contact sheets to pick from.
+   `scripts/harvest_page_images.py <product-page> --video` — it pulls every
+   image, SVG and product clip the page uses and makes numbered contact sheets
+   to pick from. Harvest the country page in the audience's language too; copy
+   comes from there. **Clips found?** The film is footage-led
+   (`references/footage-led.md`): footage carries acts 2–4, stills only as a
+   burst, stage colour = the clips' sampled ground.
    **Physical product?** It appears as its official photo every time it is on
    screen; acts 2–4 show its *output* through its own UI, and each feature line
    gets a proof shot (`creative.md` example C, `recipes.md` 20–23).
@@ -113,7 +129,8 @@ Seeing how much one 15s film contains is worth more than any rule here.
 4. **Scaffold.** `film/hyperframes.json` (copy `assets/hyperframes.json`),
    `film/package.json` pinning `hyperframes@0.8.78`, `src/index.tpl.html`,
    `src/build.py` (copy `scripts/build_template.py`). Start from the example's
-   texture layer (grain, falloff). Do **not** add a page counter (`02 / 05`),
+   texture layer (grain, falloff) — except in a footage-led film, where texture
+   over the brand's studio ground is a fail. Do **not** add a page counter (`02 / 05`),
    a progress bar or corner labels — they make the film look like slides.
 5. **Fonts.** `python3 src/build.py`, then
    `scripts/fetch_cjk_fonts.sh src/chars.txt film/assets/fonts` for Chinese.
@@ -170,6 +187,11 @@ python3 <skill>/scripts/frame_audit.py renders/silent.mp4        # pixel gate: m
   used as material (screens, masks, key visuals); every file sourced in
   `assets.md`; embedded woff2 subsets. A logo "inspired by" the brand, or the
   parent app's favicon standing in for a sub-product, is a wrong logo.
+- **When the brand ships motion, cut it; don't decorate it.** Footage on a
+  stage of its own sampled ground colour, no grain over it, no focus brackets /
+  rings / cursors drawn on the product, one signature transition from the
+  product's own shape on ≥ 3 act changes, every product shot anchored to the
+  same screen line, copy from the brand's page in the audience's language.
 - **No template look.** No beige/orange-pink lifestyle palettes, no centring
   everything, no equal-length acts doing the same thing. The accent colour is a
   highlight, not a ground.
@@ -189,7 +211,7 @@ python3 <skill>/scripts/frame_audit.py renders/silent.mp4        # pixel gate: m
 scripts/film_audit.py       code gate, before render (floors, shot list, copy and asset sources)
 scripts/layout_audit.mjs    placement gate, headless Chrome (hidden / colliding / clipped text, safe area, half-parked cards)
 scripts/frame_audit.py      pixel gate, after render (coverage, detail, motion)
-scripts/harvest_page_images.py  every image on an official product page → index.tsv + contact sheets
+scripts/harvest_page_images.py  every image (and with --video every product clip) on an official page → index.tsv + contact sheets
 scripts/fetch_cjk_fonts.sh  Noto Serif/Sans SC subsets for exactly the characters used
 scripts/build_template.py   template → film/index.html + CJK character list
 scripts/review_frames.sh    render → contact sheet + stills + duration check
