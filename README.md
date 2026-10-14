@@ -10,3 +10,7 @@
 用法要点：先填 `shot-list.md` 和 `copy.md` 再写代码；两道闸门都 `0 failed` 才算能交付。门槛是下限，不是目标。
 
 依赖：Node 22+、ffmpeg、Python 3 + numpy、Chrome + puppeteer-core（摆位闸门用，`npm i puppeteer-core`）。
+
+## 许可证
+
+代码与文档以 [MIT 协议](LICENSE) 开源。示例里的 Noto 字体（SIL OFL 1.1）、GSAP 等第三方内容保留各自的许可证，见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。用本 skill 做片时收集的品牌 logo、产品图和官方视频归品牌方所有，商用前请确认授权。
